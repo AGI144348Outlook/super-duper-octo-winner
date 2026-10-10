@@ -1,0 +1,7 @@
+{
+  "action": "no-op",
+  "ai_binding": true,
+  "schema": "contract-000-think/v0",
+  "service": "echo-bot-stage0-inert",
+  "status": "inert"
+}
