@@ -1,0 +1,19 @@
+name: Inert Worker Test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit tests
+        run: python3 -m unittest discover -s worker -p 'test_*.py' -v
+      - name: Simulate five-minute run
+        run: python3 worker/worker.py --duration 300 --checkpoint 60 --output worker-results
+      - uses: actions/upload-artifact@v4
+        with:
+          name: inert-worker-evidence
+          path: worker-results/
