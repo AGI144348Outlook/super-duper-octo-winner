@@ -1,0 +1,111 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Test and coverage
+.tox/
+.coverage
+.coverage.*
+.cache
+htmlcov/
+.pytest_cache/
+
+# Distribution / packaging
+*.manifest
+*.spec
+MANIFEST
+
+# Secrets and credentials — NEVER commit these
+.env
+.env.*
+*.key
+*.pem
+*.p12
+secrets.json
+config.local.json
+api_keys.txt
+API_keys
+cloudflare_secrets.json
+wrangler.secrets.toml
+.dev.vars
+
+# Cloudflare / Wrangler
+.wrangler/
+worker-dist/
+dist/
+
+# Large data files — use Git LFS or keep local
+*.db
+*.sqlite
+*.sqlite3
+en_thesaurus.jsonl
+DictBDB.json
+*.jsonl
+
+# Local run outputs and logs
+*.log
+echo_*_log.txt
+echo_500round_log.txt
+echo_blind_study_log.txt
+run_output/
+outputs/
+/home/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node (for any JS artifacts or tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Matrix exports — large, regenerated from source
+# Remove these lines if you want matrices tracked in the repo
+# matrices/echo_lobby_agents.json
+# matrices/echo_lhea_chains.json

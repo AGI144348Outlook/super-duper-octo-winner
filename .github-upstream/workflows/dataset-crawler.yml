@@ -1,0 +1,78 @@
+name: Dataset crawler
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Manual runs ignore schedule.txt. normal, dry-run or probe"
+        default: "probe"
+        type: choice
+        options: [probe, dry-run, normal]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dataset-crawler
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: code-library-registry
+
+      - name: Install preserved crawler
+        run: |
+          if [ ! -f Datasets/crawler/crawl.py ]; then
+            test -f echo-dataset-crawler.zip
+            unzip -o echo-dataset-crawler.zip 'Datasets/crawler/crawl.py'
+          fi
+          python3 -m py_compile Datasets/crawler/crawl.py
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run crawler
+        env:
+          DATAGOV_API_KEY: ${{ secrets.DATAGOV_API_KEY }}
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            # First live contact is probe-only. Second scheduled contact is
+            # records-only. Normal downloads begin only after both stages exist.
+            if [ ! -f Datasets/state/probe/zenodo.json ] || [ ! -f Datasets/state/probe/huggingface.json ] || [ ! -f Datasets/state/probe/datagov.json ]; then
+              python3 Datasets/crawler/crawl.py --probe
+              exit 0
+            fi
+            if [ ! -f Datasets/state/runs.json ]; then
+              python3 Datasets/crawler/crawl.py --dry-run
+              exit 0
+            fi
+            python3 Datasets/crawler/crawl.py --scheduled
+            exit 0
+          fi
+          MODE="${{ github.event.inputs.mode || 'probe' }}"
+          case "$MODE" in
+            dry-run) python3 Datasets/crawler/crawl.py --dry-run ;;
+            probe)   python3 Datasets/crawler/crawl.py --probe ;;
+            *)       python3 Datasets/crawler/crawl.py ;;
+          esac
+
+      - name: Commit crawler and results
+        run: |
+          git config user.name "echo-dataset-crawler"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Datasets
+          if git diff --cached --quiet; then
+            echo "No changes."
+            exit 0
+          fi
+          git commit -m "Datasets: crawler run $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase origin code-library-registry
+          git push origin HEAD:code-library-registry

@@ -1,0 +1,66 @@
+name: ECHO Classroom Laboratory
+
+on:
+  push:
+    branches: [main, pwa-hosting-environment]
+    paths:
+      - "pwa/public/eve/classroom/**"
+      - ".github/workflows/echo-classroom-lab.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  l000:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute L000 laboratory run
+        shell: bash
+        run: |
+          mkdir -p pwa/artifacts/l000
+          python - <<'PY'
+          import importlib.util, json, pathlib
+          root=pathlib.Path("pwa/public/eve/classroom")
+          spec=importlib.util.spec_from_file_location("lobby",root/"lobby.py")
+          lobby=importlib.util.module_from_spec(spec); spec.loader.exec_module(lobby)
+          spec2=importlib.util.spec_from_file_location("runner",root/"l000_runner.py")
+          runner=importlib.util.module_from_spec(spec2); spec2.loader.exec_module(runner)
+          glyphs=json.loads((root/"glyph_registry.json").read_text())
+          lesson=json.loads((root/"lesson_000.json").read_text())
+          result=runner.run_l000(lobby.ECHO_LOBBY,glyphs,lesson)
+          out=pathlib.Path("pwa/artifacts/l000/latest.json")
+          out.write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n")
+          print(json.dumps({"status":result["status"],"rounds_executed":result["rounds_executed"],"glyph_sequence":result["glyph_sequence"],"accepted_indexes":list(result["accepted_indexes"]),"final_validation":result["final_validation"],"semantic_organization":result["semantic_organization"],"next_need":result["next_need"]},indent=2,ensure_ascii=False))
+          if result["status"]!="PASS": raise SystemExit(1)
+          PY
+      - name: Upload complete L000 record
+        uses: actions/upload-artifact@v4
+        with:
+          name: echo-l000-${{ github.run_number }}
+          path: pwa/artifacts/l000/latest.json
+
+  recess:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PWA host
+        uses: actions/checkout@v4
+      - name: Checkout ECHO Recess environment
+        uses: actions/checkout@v4
+        with:
+          ref: echo-recess-experiment
+          path: recess-src
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Recess runtime
+        run: pip install nltk
+      - name: Execute ECHO Recess
+        working-directory: recess-src
+        run: python ECHO_AutonomousAgency/src/echo_recess.py
+      - name: Upload complete Recess record
+        uses: actions/upload-artifact@v4
+        with:
+          name: echo-recess-${{ github.run_number }}
+          path: recess-src/ECHO_AutonomousAgency/sandbox/recess_session_log.json

@@ -1,0 +1,178 @@
+ECHO GOVERNOR INDEXING ALGORITHM
+Mashet/LHEA Research
+Copyright (C) 2024-2026 Timothy Marvin Jr. (Quixpydr / Maven)
+All rights reserved.
+
+================================================================================
+PART 1: OPEN SOURCE LICENSE — GNU AFFERO GENERAL PUBLIC LICENSE v3
+================================================================================
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+details.
+
+The full text of the GNU Affero General Public License v3 is available at:
+https://www.gnu.org/licenses/agpl-3.0.html
+
+================================================================================
+PART 2: COMMERCIAL USE EXCEPTION
+================================================================================
+
+In addition to the rights granted under the GNU Affero General Public License
+version 3 (AGPL-3.0) above, Timothy Marvin Jr. ("Licensor") grants the
+following commercial exception:
+
+SECTION 1 — PERMITTED FREE USE
+
+The following uses are permitted under AGPL-3.0 without requiring a separate
+commercial license:
+
+  a) Individual developers and researchers using this software for personal,
+     educational, or research purposes
+
+  b) Organizations with annual revenue or funding BELOW USD $1,000,000 AND
+     with 10 or fewer employees or contractors using this software
+
+  c) Non-profit organizations (registered 501(c)(3) or equivalent)
+
+  d) Academic institutions and government research laboratories
+
+  e) Any organization using this software solely for development, testing,
+     or evaluation purposes, not in a production environment
+
+  f) Open-source projects that are themselves licensed under AGPL-3.0 or
+     a compatible copyleft license
+
+SECTION 2 — WHEN A COMMERCIAL LICENSE IS REQUIRED
+
+A separate commercial license must be obtained from the Licensor if ANY of
+the following apply:
+
+  a) Your organization has annual revenue or funding of USD $1,000,000 or
+     more AND more than 10 employees or contractors use this software
+
+  b) You embed this software in a closed-source product or service you
+     distribute or sell to others
+
+  c) You operate a SaaS, API, or hosted service built on this software and
+     do not wish to release the source code of your service under AGPL-3.0
+
+  d) Your organization's legal or IP policy prohibits AGPL-3.0 licensed
+     dependencies in production systems
+
+  e) You require warranty, indemnification, or SLAs that the AGPL-3.0
+     explicitly disclaims
+
+  f) You use this software to provide AI inference services, symbolic
+     reasoning services, or knowledge retrieval services to customers
+     for compensation, at the revenue/employee thresholds in (a) above
+
+SECTION 3 — WHAT REQUIRES COMMERCIAL LICENSING REGARDLESS OF SIZE
+
+The following uses always require a commercial license, regardless of
+organization size or revenue:
+
+  a) Embedding the LHEA Instruction Set Architecture specification in a
+     commercial hardware or software product
+
+  b) Incorporating the TEMA Memory Architecture in a commercial AI system
+     or platform you sell or license to others
+
+  c) Using the Mashet Dictionary, Alamaket Kernel, or VGM axiom set as
+     training data or fine-tuning data for any machine learning model
+     you commercialize
+
+  d) White-labeling or OEM redistribution of this software within your
+     own commercial product
+
+SECTION 4 — COMMERCIAL LICENSE TIERS
+
+Commercial licenses are available in the following tiers. Contact the
+Licensor for current pricing and terms.
+
+  Tier 1 — Startup
+    Annual revenue $1M–$10M. Annual flat license fee.
+    Includes: commercial use rights, email support.
+
+  Tier 2 — Growth
+    Annual revenue $10M–$100M. Annual flat fee or revenue share.
+    Includes: Tier 1 rights plus support SLA and integration consultation.
+
+  Tier 3 — Enterprise
+    Annual revenue $100M+. Negotiated annually.
+    Includes: custom deployment, priority support, indemnification options.
+
+  Tier 4 — OEM / Platform
+    For embedding in products sold to others. Negotiated.
+    Includes: redistribution rights, white-label rights, deployment support.
+
+  Component License
+    For organizations requiring specific components only (LHEA ISA, TEMA
+    architecture, VGM axiom set, Geosensory Registry). Priced per component.
+
+SECTION 5 — AGPL-3.0 OBLIGATIONS REMAIN
+
+This commercial exception does NOT waive AGPL-3.0 requirements for:
+
+  a) Organizations that qualify for free use under Section 1
+  b) Sharing source code of modifications when distributed
+  c) Providing source code to network users (AGPL's network provision)
+  d) Attribution and copyright notices
+  e) Ensuring derivative works are also AGPL-3.0 licensed (for free users)
+
+SECTION 6 — ENFORCEMENT
+
+Violation of these terms will result in:
+
+  a) Immediate termination of the commercial exception
+  b) Requirement to comply with full AGPL-3.0 terms immediately
+  c) Potential legal action for license violation
+
+SECTION 7 — CONTRIBUTIONS
+
+All contributions to this project are governed by the Echo_Green_Future
+Contributor License Agreement (CLA.md). The Licensor retains the right to
+offer contributions under commercial license terms. Contributors retain
+copyright over their contributions.
+
+================================================================================
+PART 3: COMPONENTS AND THEIR COVERAGE
+================================================================================
+
+The following components are covered by this license:
+
+  - ECHO Governor Indexing Algorithm (A-000 through A-158 and future additions)
+  - LHEA (Latin-Hebrew Execution Architecture) specification and implementation
+  - TEMA (Toroidal Eigenvalue Memory Architecture) specification and implementation
+  - Mashet/Alamaket framework documentation and data
+  - Validated Generalization Matrix (VGM) axiom set
+  - Logic Reasoning Matrix (LRM) implementation
+  - Geosensory Registry and crawler (A-155, A-158)
+  - Homework acquisition system (homework.py, run_homework.py)
+  - All artifacts, React interfaces, and deployment configurations
+  - All matrix exports (JSON data files in the /matrices directory)
+
+================================================================================
+CONTACT FOR COMMERCIAL LICENSING
+================================================================================
+
+Timothy Marvin Jr.
+GitHub: @Quixpydr
+Project: Echo_Green_Future (Mashet/LHEA Research)
+
+For commercial licensing inquiries, integration partnerships, OEM licensing,
+or component licensing, contact via GitHub.
+
+Response time for licensing inquiries: within 30 days.
+
+================================================================================
+
+ר ECHO · ה-ח-ע · 83 (prime) · משת אלמקת
+"Echo is the index, made algorithm."
+Mashet/LHEA Research · Timothy Marvin Jr.

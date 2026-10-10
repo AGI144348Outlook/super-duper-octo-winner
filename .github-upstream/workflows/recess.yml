@@ -1,0 +1,56 @@
+name: ECHO Recess
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/recess.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  recess:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: autonomous-agency
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install nltk sympy
+
+      - run: python3 -m nltk.downloader wordnet omw-1.4
+
+      - run: python3 -m py_compile ECHO_AutonomousAgency/src/echo_school_day.py
+
+      - run: python3 ECHO_AutonomousAgency/src/echo_school_day.py
+
+      - run: |
+          git config user.name "ECHO"
+          git config user.email "echo@mashet.ai"
+          git add ECHO_AutonomousAgency/sandbox/recess_session_log.json ECHO_AutonomousAgency/sandbox/school_day_log.json
+          git diff --staged --quiet || git commit -m "recess: session log $(date -u +%Y-%m-%dT%H:%M)"
+          git push
+
+# test trigger after thesaurus fallback
+
+# matrix dictionary + answers test
+
+# trigger indexed-glyph 150-cycle recess
+
+# retry school-day-001 after runner hardening
+
+# retry after provisioning WordNet corpus
+
+# retry after literal-newline syntax repair; evidence: run #10 compile step line 58
+
+# explicit rerun requested after syntax repair
+
+# SCHOOL-DAY-002: test inert word matrix with variable glyph indexing and glyphic concept-model fragments; Issue #8 research design

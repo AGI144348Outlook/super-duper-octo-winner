@@ -1,0 +1,135 @@
+name: IVS full corpus registry test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/ivs-full-corpus.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  full-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: code-library-registry-ivs
+          fetch-depth: 0
+      - name: Clone upstream IVS corpus
+        run: git clone --depth 1 https://github.com/mayig/indus-valley-script-corpus.git /tmp/ivs-corpus
+      - name: Run full-corpus registry former
+        run: |
+          python3 - <<'PY'
+          import json, hashlib, pathlib, collections, statistics, subprocess, os
+          root=pathlib.Path('/tmp/ivs-corpus/corpus')
+          upstream_sha=subprocess.check_output(['git','-C','/tmp/ivs-corpus','rev-parse','HEAD'],text=True).strip()
+          files=sorted(root.rglob('*.json'))
+          if not files: raise RuntimeError('IVS corpus contains no JSON files')
+          records=[]; errors=[]; sources=[]
+          for p in files:
+              raw=p.read_text(encoding='utf-8')
+              rel=str(p.relative_to('/tmp/ivs-corpus'))
+              try:
+                  a=json.loads(raw)
+                  if not isinstance(a,list): raise ValueError('top-level not array')
+                  sources.append({'path':rel,'records':len(a),'sha256':hashlib.sha256(raw.encode()).hexdigest()})
+                  for r in a: records.append((rel,r))
+              except Exception as e: errors.append({'path':rel,'error':str(e)})
+          if errors: raise RuntimeError('IVS corpus parse errors: '+json.dumps(errors))
+          if not records: raise RuntimeError('IVS corpus contains no inscriptions')
+          glyph={}; occ=[]; adj=collections.Counter(); positions={}; desc=collections.defaultdict(list); repeats=[]
+          for src,r in records:
+              rid=r.get('id'); seq=[]
+              desc[r.get('description','')].append(rid)
+              for i,g in enumerate(r.get('graphemes',[])):
+                  gid=g.get('id'); feat=g.get('features',[]); seq.append(gid)
+                  q=glyph.setdefault(gid,{'id':gid,'occurrences':0,'records':set(),'feature_vectors':set()})
+                  q['occurrences']+=1;q['records'].add(rid);q['feature_vectors'].add(json.dumps(feat,separators=(',',':')))
+                  pos=positions.setdefault(gid,{'first':0,'medial':0,'last':0,'singleton':0})
+                  if len(r.get('graphemes',[]))==1: pos['singleton']+=1
+                  elif i==0: pos['first']+=1
+                  elif i==len(r.get('graphemes',[]))-1: pos['last']+=1
+                  else: pos['medial']+=1
+                  occ.append({'record_id':rid,'position':i,'grapheme_id':gid,'features':feat,'source_path':src})
+              for a,b in zip(seq,seq[1:]): adj[(a,b)]+=1
+              c=collections.Counter(seq)
+              for gid,n in c.items():
+                  if n>1: repeats.append({'record_id':rid,'grapheme_id':gid,'count':n,'source_path':src})
+          gr=[]
+          for q in glyph.values():
+              gr.append({'id':q['id'],'occurrences':q['occurrences'],'record_count':len(q['records']),'feature_vectors':[json.loads(x) for x in sorted(q['feature_vectors'])]})
+          lengths=[len(r.get('graphemes',[])) for _,r in records]
+          if not occ: raise RuntimeError('IVS corpus contains no grapheme occurrences')
+          if sum(q['occurrences'] for q in gr)!=len(occ): raise RuntimeError('Occurrence totals disagree')
+          if sum(sum(p.values()) for p in positions.values())!=len(occ): raise RuntimeError('Position totals disagree')
+          if sum(adj.values())!=sum(max(n-1,0) for n in lengths): raise RuntimeError('Adjacency totals disagree')
+          result={
+           'test':'IVS Registry Formation 002 — Full Current mayig Corpus',
+           'scope':{'repository':'mayig/indus-valley-script-corpus','ref':'main','commit_sha':upstream_sha,'workflow_run_id':os.environ.get('GITHUB_RUN_ID'),'workflow_sha':os.environ.get('GITHUB_SHA'),'corpus_json_files':len(files),'parsed_files':len(sources),'parse_errors':len(errors),'inscriptions':len(records)},
+           'registry_of_registries':[
+            {'index':0,'name':'DSL Registry','status':'EMPTY'},
+            {'index':1,'name':'Source File Registry','count':len(sources)},
+            {'index':2,'name':'Inscription Registry','count':len(records)},
+            {'index':3,'name':'Grapheme Registry','count':len(gr)},
+            {'index':4,'name':'Occurrence Registry','count':len(occ)},
+            {'index':5,'name':'Position Registry','count':len(positions)},
+            {'index':6,'name':'Adjacency Registry','count':len(adj)},
+            {'index':7,'name':'Description Registry','count':len(desc)},
+            {'index':8,'name':'Within-Inscription Repetition Registry','count':len(repeats)},
+            {'index':9,'name':'Unresolved Registry','count':len(errors)}],
+           'statistics':{'length_min':min(lengths) if lengths else 0,'length_max':max(lengths) if lengths else 0,'length_mean':statistics.mean(lengths) if lengths else 0,
+             'most_frequent_graphemes':sorted(gr,key=lambda x:x['occurrences'],reverse=True)[:25],
+             'most_frequent_adjacencies':[{'a':a,'b':b,'count':n} for (a,b),n in adj.most_common(25)]},
+           'source_file_registry':sources,
+           'inscription_registry':[dict(r,source_path=src) for src,r in records],
+           'grapheme_registry':sorted(gr,key=lambda x:x['id']),
+           'occurrence_registry':occ,
+           'position_registry':positions,
+           'adjacency_registry':[{'a':a,'b':b,'count':n,'status':'OBSERVED'} for (a,b),n in sorted(adj.items())],
+           'description_registry':[{'description':d,'record_ids':ids,'status':'OBSERVED'} for d,ids in sorted(desc.items())],
+           'repetition_registry':repeats,
+           'unresolved_registry':errors,
+           'invariants':{'registration_is_not_execution':True,'semantic_decipherment_attempted':False,'source_values_repaired':False,'meaning_imported':False}}
+          out=pathlib.Path('IVS/tests/registry-formation-002-full-corpus/output');out.mkdir(parents=True,exist_ok=True)
+          (out/'result.json').write_text(json.dumps(result,indent=2,ensure_ascii=False)+'\n')
+          report=f"""# IVS Registry Formation 002 — Full Current Corpus
+
+          Scope: full current `mayig/indus-valley-script-corpus` `main` corpus directory.
+
+          Upstream commit: {upstream_sha}
+          Workflow run: {os.environ.get('GITHUB_RUN_ID')}
+          Validation: nonempty corpus, zero parse errors, consistent occurrence/position/adjacency totals.
+
+          - JSON files: {len(files)}
+          - Parsed files: {len(sources)}
+          - Parse errors: {len(errors)}
+          - Inscriptions: {len(records)}
+          - Distinct graphemes: {len(gr)}
+          - Grapheme occurrences: {len(occ)}
+          - Distinct adjacencies: {len(adj)}
+          - Description classes: {len(desc)}
+          - Repetition records: {len(repeats)}
+          - Length range: {min(lengths) if lengths else 0}–{max(lengths) if lengths else 0}
+          - Mean length: {statistics.mean(lengths) if lengths else 0:.3f}
+
+          ## Evidence boundary
+          No decipherment semantics were imported. No source values were repaired. Registration granted no execution authority.
+          """
+          (out/'REPORT.md').write_text('\n'.join(x.strip() for x in report.splitlines())+'\n')
+          print(report)
+          PY
+      - name: Commit results to IVS branch
+        run: |
+          git config user.name "echo-ivs-registry-test"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add IVS/tests/registry-formation-002-full-corpus
+          if git diff --cached --quiet; then
+            echo "No result changes."
+            exit 0
+          fi
+          git commit -m "IVS: full corpus registry formation test"
+          git pull --rebase origin code-library-registry-ivs
+          git push origin HEAD:code-library-registry-ivs

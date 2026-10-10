@@ -1,0 +1,79 @@
+name: Echo Label Dispatcher
+
+# Contract 000 §27, route 3. Added to main under Timothy's [TJ] exception of 2026-10-09.
+# Its only job: when Timothy adds the label `run:approved` to an Issue titled
+# "[RUN] bridge <participant>", start the Cloudflare bridge on bridge-experiment
+# for that participant. The bridge itself still validates the operation.
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  actions: write
+  issues: write
+  contents: read
+
+concurrency:
+  group: echo-label-dispatcher
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: >-
+      github.event.label.name == 'run:approved' &&
+      github.event.sender.login == github.repository_owner &&
+      startsWith(github.event.issue.title, '[RUN] ')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      ISSUE: ${{ github.event.issue.number }}
+      TITLE: ${{ github.event.issue.title }}
+    steps:
+      - name: Parse and allowlist the request
+        id: req
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$TITLE" =~ ^\[RUN\]\ bridge\ (chatgpt|claude)$ ]]; then
+            echo "participant=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "Rejected: title must be exactly '[RUN] bridge chatgpt' or '[RUN] bridge claude'."
+            gh issue comment "$ISSUE" -R "$REPO" --body "**echo-label-dispatcher:** rejected. Title must be exactly \`[RUN] bridge chatgpt\` or \`[RUN] bridge claude\`."
+            gh issue edit "$ISSUE" -R "$REPO" --remove-label "run:approved"
+            exit 1
+          fi
+
+      - name: Record what is being approved
+        shell: bash
+        env:
+          PARTICIPANT: ${{ steps.req.outputs.participant }}
+        run: |
+          set -euo pipefail
+          sha="$(gh api "repos/$REPO/commits/bridge-experiment" --jq .sha)"
+          op="$(gh api "repos/$REPO/contents/bridge/ops/${PARTICIPANT}.json?ref=$sha" --jq .content | base64 -d)"
+          {
+            echo "**echo-label-dispatcher:** approved by @${{ github.event.sender.login }}. Starting the bridge for \`${PARTICIPANT}\`."
+            echo
+            echo "bridge-experiment @ \`${sha:0:7}\`, operation file \`bridge/ops/${PARTICIPANT}.json\`:"
+            echo '```json'
+            echo "$op"
+            echo '```'
+            echo "The bridge re-validates this operation before acting."
+          } > body.md
+          gh issue comment "$ISSUE" -R "$REPO" --body-file body.md
+
+      - name: Dispatch the bridge
+        shell: bash
+        env:
+          PARTICIPANT: ${{ steps.req.outputs.participant }}
+        run: |
+          set -euo pipefail
+          gh workflow run cloudflare-bridge.yml -R "$REPO" --ref bridge-experiment -f participant="$PARTICIPANT"
+          sleep 8
+          run_url="$(gh run list -R "$REPO" --workflow cloudflare-bridge.yml --event workflow_dispatch --limit 1 --json url --jq '.[0].url')"
+          gh issue comment "$ISSUE" -R "$REPO" --body "**echo-label-dispatcher:** bridge started: $run_url"
+          # Remove the approval so each run needs a fresh label.
+          gh issue edit "$ISSUE" -R "$REPO" --remove-label "run:approved" --add-label "run:dispatched"
