@@ -1,22 +1,76 @@
 name: Mirror Echo Upstream
+# One-way snapshot of Echo_Green_Future's main into the `echo-upstream-mirror` branch.
+# Upstream workflow files are moved from `.github/` to `.github-upstream/` so that
+# nothing from Echo can run in this repository (and so GitHub's built-in token,
+# which may never write workflow files, can push the mirror).
+# Each mirror commit records the exact upstream commit in UPSTREAM.md and its message.
 on:
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: mirror-echo
+  cancel-in-progress: false
 jobs:
   mirror:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Mirror upstream main into isolated branch
+      - name: Snapshot upstream main into the mirror branch
         env:
           GH_TOKEN: ${{ github.token }}
+          UPSTREAM_URL: https://github.com/AGI144348Outlook/Echo_Green_Future.git
+          MIRROR_BRANCH: echo-upstream-mirror
+          DEST_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
         run: |
           set -euo pipefail
-          git init mirror
-          cd mirror
+          git init -q work
+          cd work
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote add upstream https://github.com/AGI144348Outlook/Echo_Green_Future.git
-          git remote add destination "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git fetch --no-tags upstream main
-          git push --force destination FETCH_HEAD:refs/heads/echo-upstream-mirror
+          git remote add upstream "$UPSTREAM_URL"
+          git remote add destination "$DEST_URL"
+
+          git fetch -q --depth 1 --no-tags upstream main
+          up_sha="$(git rev-parse FETCH_HEAD)"
+
+          parent=""
+          if git fetch -q --depth 1 --no-tags destination "$MIRROR_BRANCH" 2>/dev/null; then
+            parent="$(git rev-parse FETCH_HEAD)"
+            if git show -s --format=%B "$parent" | grep -qx "upstream ${up_sha}"; then
+              echo "Mirror already at upstream ${up_sha}; nothing to do."
+              exit 0
+            fi
+          fi
+
+          git checkout -q --detach "$up_sha"
+          files_upstream="$(git ls-files | wc -l)"
+
+          # Neutralize upstream workflows: keep every file, but nothing can run here.
+          if [ -e .github ]; then
+            git mv .github .github-upstream
+          fi
+          {
+            echo "# Echo upstream mirror"
+            echo
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Source | ${UPSTREAM_URL%.git} |"
+            echo "| Branch | main |"
+            echo "| Upstream commit | \`${up_sha}\` |"
+            echo "| Mirrored at (UTC) | $(date -u +%Y-%m-%dT%H:%M:%SZ) |"
+            echo "| Files in upstream commit | ${files_upstream} |"
+            echo
+            echo "All files are identical to the upstream commit, except that the upstream \`.github/\` folder is stored as \`.github-upstream/\` so its workflows cannot run here. This file is added by the mirror."
+          } > UPSTREAM.md
+          git add -A
+          tree="$(git write-tree)"
+
+          msg="Mirror Echo_Green_Future main at ${up_sha:0:7}"$'\n\n'"upstream ${up_sha}"
+          if [ -n "$parent" ]; then
+            commit="$(git commit-tree "$tree" -p "$parent" -m "$msg")"
+          else
+            commit="$(git commit-tree "$tree" -m "$msg")"
+          fi
+          git push -q destination "${commit}:refs/heads/${MIRROR_BRANCH}"
+          echo "Mirrored upstream ${up_sha} as ${commit} on ${MIRROR_BRANCH}."
