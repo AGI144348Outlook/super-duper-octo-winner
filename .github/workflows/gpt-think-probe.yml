@@ -1,0 +1,49 @@
+name: GPT Manual Think Bridge Probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gpt-think-output
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fetch and validate inert bot output
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 20 --retry 2 \
+            -H 'Cache-Control: no-cache' \
+            'https://echo-bot-stage0-inert.agi144348.workers.dev/think' > /tmp/response.json
+          python3 - <<'PY'
+          import json, pathlib
+          data=json.loads(pathlib.Path('/tmp/response.json').read_text())
+          assert set(data)=={'schema','service','status','action','ai_binding'}, 'Unexpected response fields'
+          assert data['schema']=='contract-000-think/v0'
+          assert data['service']=='echo-bot-stage0-inert'
+          assert data['status']=='inert' and data['action']=='no-op'
+          assert type(data['ai_binding']) is bool
+          pathlib.Path('/tmp/validated.json').write_text(json.dumps(data,sort_keys=True,indent=2)+'\n')
+          PY
+      - name: Commit validated evidence to isolated branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init -q /tmp/output
+          cd /tmp/output
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q --depth 1 origin gpt-worker-output
+          git checkout -q -B gpt-worker-output FETCH_HEAD
+          mkdir -p worker-evidence
+          cp /tmp/validated.json worker-evidence/latest.json
+          git add -- worker-evidence/latest.json
+          if git diff --cached --quiet; then echo 'No change; no commit'; exit 0; fi
+          git commit -qm 'evidence: validated inert think bridge response'
+          git push -q origin HEAD:refs/heads/gpt-worker-output
