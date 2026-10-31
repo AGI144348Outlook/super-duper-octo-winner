@@ -26,6 +26,11 @@ public class MainActivity extends Activity {
   ScrollView scroll=new ScrollView(this);root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(36,44,36,48);root.setBackgroundColor(bg);scroll.addView(root);
   root.addView(heading("NexusPortal  %",26));root.addView(heading("AI configuration",20));
   status=heading("Personal device prototype · MCP not connected · screen observation OFF",14);status.setTextColor(Color.LTGRAY);root.addView(status);
+  root.addView(heading("AI companion launcher",18));
+  TextView launchNote=heading("Local app shortcuts only — MCP disconnected. Selecting an AI opens its installed Android app and associates its name with the floating %. No conversation is transferred.",14);launchNote.setTextColor(Color.LTGRAY);root.addView(launchNote);
+  action("ChatGPT · Open app (not connected)",v->launchCompanion("ChatGPT","com.openai.chatgpt"));
+  action("Claude · Open app (not connected)",v->launchCompanion("Claude","com.anthropic.claude"));
+  action("Gemini · Open app (not connected)",v->launchCompanion("Gemini","com.google.android.apps.bard"));
   root.addView(heading("My AI connections",18));
   TextView note=heading("MCP connection slots will appear here once verified. No AI platform is connected yet.",14);note.setTextColor(Color.LTGRAY);root.addView(note);
   root.addView(heading("Session controls",18));
@@ -46,7 +51,23 @@ public class MainActivity extends Activity {
   root.addView(heading("Permissions",18));
   TextView permissions=heading("Overlay: user-granted Android permission.\nScreen observation: OFF (not implemented).\nAI commands: OFF (not connected).\nAnnotation permission: local session only.\nTouch control: not available.",14);permissions.setTextColor(Color.LTGRAY);root.addView(permissions);
   setContentView(scroll);
+  if(getIntent().getBooleanExtra("companion_panel",false))showCompanionPanel();
   syncSessionState();
+ }
+ private void launchCompanion(String name,String pkg){
+  Intent launch=getPackageManager().getLaunchIntentForPackage(pkg);
+  if(launch==null){status.setText(name+" app not found or launch unavailable. No connection made.");return;}
+  if(!Settings.canDrawOverlays(this)){startOverlay();return;}
+  sendOverlay("ENSURE_STARTED");
+  getSharedPreferences("nexusportal_companion",MODE_PRIVATE).edit().putString("name",name).putString("package",pkg).putBoolean("app_open",true).apply();
+  launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+  try{startActivity(launch);}catch(Exception e){getSharedPreferences("nexusportal_companion",MODE_PRIVATE).edit().putBoolean("app_open",false).apply();status.setText("Could not open "+name+".");}
+ }
+ private void showCompanionPanel(){
+  String name=getSharedPreferences("nexusportal_companion",MODE_PRIVATE).getString("name","None");
+  root.addView(heading("Companion: "+name+" · MCP disconnected",18));
+  action("Return to selected AI app",v->{String pkg=getSharedPreferences("nexusportal_companion",MODE_PRIVATE).getString("package","");if(!pkg.isEmpty())launchCompanion(name,pkg);});
+  action("Clear companion selection",v->{getSharedPreferences("nexusportal_companion",MODE_PRIVATE).edit().clear().apply();status.setText("Companion selection cleared.");});
  }
  private void sendOverlay(String command){Intent i=new Intent(this,OverlayService.class);i.setAction(command);if("STOP".equals(command)){stopService(i);return;}if(Build.VERSION.SDK_INT>=26)startForegroundService(i);else startService(i);}
  private void startOverlay(){
