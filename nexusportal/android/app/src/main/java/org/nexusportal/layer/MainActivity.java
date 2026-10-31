@@ -12,6 +12,8 @@ import android.widget.*;
 public class MainActivity extends Activity {
  private TextView status;
  private LinearLayout root;
+ private boolean annotationPermission=false;
+ private TextView consentStatus;
  private final int bg=Color.rgb(16,24,39), accent=Color.rgb(109,227,212);
  private TextView heading(String text,int size){TextView t=new TextView(this);t.setText(text);t.setTextSize(size);t.setTextColor(Color.WHITE);t.setPadding(0,18,0,10);return t;}
  private Button action(String label,View.OnClickListener click){Button b=new Button(this);b.setText(label);b.setOnClickListener(click);root.addView(b);return b;}
@@ -24,12 +26,22 @@ public class MainActivity extends Activity {
   root.addView(heading("My AI connections",18));
   TextView note=heading("MCP connection slots will appear here once verified. No AI platform is connected yet.",14);note.setTextColor(Color.LTGRAY);root.addView(note);
   root.addView(heading("Session controls",18));
+  Switch annotationConsent=new Switch(this);
+  annotationConsent.setText("Allow AI annotations in this session");
+  annotationConsent.setTextColor(Color.WHITE);
+  annotationConsent.setChecked(false);
+  root.addView(annotationConsent);
+  consentStatus=heading("Annotations: denied · No remote connection",14);
+  consentStatus.setTextColor(Color.LTGRAY);
+  root.addView(consentStatus);
+  annotationConsent.setOnCheckedChangeListener((button,checked)->{annotationPermission=checked;consentStatus.setText(checked?"Annotations: permitted locally · No remote connection":"Annotations: denied · No remote connection");if(!checked)sendOverlay("HIDE_ANNOTATIONS");});
+  action("Preview authorized annotation (local only)",v->{if(!annotationPermission){status.setText("Enable annotation permission before previewing.");return;}startOverlay();sendOverlay("SHOW_ANNOTATIONS");status.setText("Local preview only. No ChatGPT or MCP connection.");});
   action("Start floating %",v->startOverlay());
   action("Show / hide sample annotation",v->sendOverlay("TOGGLE_ANNOTATIONS"));
   action("Pause annotations",v->sendOverlay("HIDE_ANNOTATIONS"));
-  action("Stop session and remove overlay",v->{sendOverlay("STOP");status.setText("Session stopped.");});
+  action("Stop session and remove overlay",v->{annotationConsent.setChecked(false);sendOverlay("STOP");status.setText("Session stopped; annotation permission revoked.");});
   root.addView(heading("Permissions",18));
-  TextView permissions=heading("Overlay: user-granted Android permission.\nScreen observation: OFF (not implemented).\nAI commands: OFF (not connected).\nTouch control: not available.",14);permissions.setTextColor(Color.LTGRAY);root.addView(permissions);
+  TextView permissions=heading("Overlay: user-granted Android permission.\nScreen observation: OFF (not implemented).\nAI commands: OFF (not connected).\nAnnotation permission: local session only.\nTouch control: not available.",14);permissions.setTextColor(Color.LTGRAY);root.addView(permissions);
   setContentView(scroll);
  }
  private void sendOverlay(String command){Intent i=new Intent(this,OverlayService.class);i.setAction(command);if("STOP".equals(command)){stopService(i);return;}if(Build.VERSION.SDK_INT>=26)startForegroundService(i);else startService(i);}
