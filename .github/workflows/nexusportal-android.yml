@@ -1,5 +1,11 @@
 name: NexusPortal Android APK
 on:
+  push:
+    branches:
+      - feature/nexusportal-renderer-foundation
+    paths:
+      - 'nexusportal/android/**'
+      - '.github/workflows/nexusportal-android.yml'
   workflow_dispatch:
 permissions:
   contents: read
