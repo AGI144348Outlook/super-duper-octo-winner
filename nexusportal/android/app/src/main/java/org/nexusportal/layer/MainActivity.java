@@ -51,7 +51,7 @@ public class MainActivity extends Activity {
   root.addView(heading("NexusPortal  %",26));root.addView(heading("AI configuration",20));
   status=heading("Personal device prototype · MCP not connected · screen observation OFF",14);status.setTextColor(Color.LTGRAY);root.addView(status);
   root.addView(heading("AI companion launcher",18));
-  TextView launchNote=heading("Local app shortcuts only — MCP disconnected. Selecting an AI opens its installed Android app and associates its name with the floating %. No conversation is transferred.",14);launchNote.setTextColor(Color.LTGRAY);root.addView(launchNote);
+  TextView launchNote=heading("ChatGPT Voice stays in the ChatGPT app. Enable Background Conversations in ChatGPT Settings > Voice, open ChatGPT, and start Voice. Tap the floating % to minimize to Home; tap % again to return to that chat. NexusPortal does not capture or transfer the conversation.",14);launchNote.setTextColor(Color.LTGRAY);root.addView(launchNote);
   action("ChatGPT · Open app (not connected)",v->launchCompanion("ChatGPT","com.openai.chatgpt"));
   action("Claude · Open app (not connected)",v->launchCompanion("Claude","com.anthropic.claude"));
   action("Gemini · Open app (not connected)",v->launchCompanion("Gemini","com.google.android.apps.bard"));
