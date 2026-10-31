@@ -16,6 +16,7 @@ public class OverlayService extends Service {
  private boolean shown = false;
  private boolean sessionActive = false;
  private boolean annotationAuthorized = false;
+ private void publishSessionState() { getSharedPreferences("nexusportal_session", MODE_PRIVATE).edit().putBoolean("active", sessionActive).putBoolean("annotations", sessionActive && annotationAuthorized).apply(); }
  private final Handler handler = new Handler(Looper.getMainLooper());
 
  private int dp(float value) { return Math.round(value * getResources().getDisplayMetrics().density); }
@@ -29,6 +30,7 @@ public class OverlayService extends Service {
   wm = (WindowManager) getSystemService(WINDOW_SERVICE);
   createNotification();
   createWindows();
+  publishSessionState();
  }
 
  private void createNotification() {
@@ -177,10 +179,11 @@ public class OverlayService extends Service {
  @Override public int onStartCommand(Intent intent, int flags, int startId) {
   if (intent != null) {
    String action = intent.getAction();
-   if ("STOP".equals(action)) { revokeAnnotations(); sessionActive = false; stopSelf(); return START_NOT_STICKY; }
+   if ("STOP".equals(action)) { revokeAnnotations(); annotationAuthorized = false; sessionActive = false; publishSessionState(); stopSelf(); return START_NOT_STICKY; }
    if ("START".equals(action)) { sessionActive = true; annotationAuthorized = false; revokeAnnotations(); }
    if ("AUTHORIZE_ANNOTATIONS".equals(action) && sessionActive) annotationAuthorized = true;
    if ("REVOKE_ANNOTATIONS".equals(action)) { annotationAuthorized = false; revokeAnnotations(); }
+   publishSessionState();
    if (sessionActive && annotationAuthorized && "SHOW_ANNOTATIONS".equals(action)) { shown = true; if (layer != null) layer.invalidate(); }
    if (sessionActive && annotationAuthorized && "TOGGLE_ANNOTATIONS".equals(action)) { shown = !shown; if (layer != null) layer.invalidate(); }
    if ("HIDE_ANNOTATIONS".equals(action)) { shown = false; if (layer != null) layer.invalidate(); }
@@ -194,6 +197,7 @@ public class OverlayService extends Service {
   revokeAnnotations();
   annotationAuthorized = false;
   sessionActive = false;
+  publishSessionState();
   handler.removeCallbacksAndMessages(null);
   if (wm != null) {
    if (bubble != null) wm.removeView(bubble);
