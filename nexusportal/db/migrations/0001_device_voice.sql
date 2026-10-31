@@ -41,3 +41,16 @@ CREATE TABLE IF NOT EXISTS nexusportal_device_commands (
 );
 CREATE INDEX IF NOT EXISTS nexusportal_commands_poll_idx
   ON nexusportal_device_commands (device_id, status, created_at);
+
+CREATE TABLE IF NOT EXISTS nexusportal_speech_inputs (
+  input_id text PRIMARY KEY,
+  device_id text NOT NULL REFERENCES nexusportal_devices(device_id),
+  session_id text NOT NULL,
+  transcript text NOT NULL CHECK (char_length(transcript) BETWEEN 1 AND 2000),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  consumed_at timestamptz,
+  CHECK (expires_at > created_at)
+);
+CREATE INDEX IF NOT EXISTS nexusportal_speech_inputs_poll_idx
+  ON nexusportal_speech_inputs (device_id, session_id, consumed_at, created_at);
