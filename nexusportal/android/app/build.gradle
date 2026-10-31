@@ -1,0 +1,3 @@
+plugins { id 'com.android.application' }
+android { namespace 'org.nexusportal.layer'; compileSdk 35
+ defaultConfig { applicationId 'org.nexusportal.layer'; minSdk 26; targetSdk 34; versionCode 1; versionName '0.1.0' } }
