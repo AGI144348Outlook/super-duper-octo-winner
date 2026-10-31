@@ -80,6 +80,14 @@ final class DeviceRelayClient {
   String token=SecureDeviceSecretStore.get(c,"token");if(token==null)return;
   try{post("command-ack",token,new JSONObject().put("commandId",commandId).put("sessionId",sid),(r,e)->{});}catch(Exception ignored){}
  }
+ static void revoke(Context c,Callback cb){
+  String token=SecureDeviceSecretStore.get(c,"token");
+  if(token==null){UI.post(()->cb.done(null,"Phone is not paired"));return;}
+  post("device-revoke",token,new JSONObject(),(r,e)->{
+   if(e==null)c.getSharedPreferences("nexusportal_device",Context.MODE_PRIVATE).edit().clear().apply();
+   cb.done(r,e);
+  });
+ }
  static void sendTranscript(Context c,String transcript,Callback cb){
   String token=SecureDeviceSecretStore.get(c,"token"),sid=sessionId(c);
   if(token==null||sid==null||!c.getSharedPreferences("nexusportal_device",Context.MODE_PRIVATE).getBoolean("voice_active",false)){UI.post(()->cb.done(null,"Start a paired voice session first"));return;}
