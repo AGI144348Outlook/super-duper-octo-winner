@@ -57,7 +57,7 @@ module.exports = async function handler(req, res) {
       const sessionId = consent && validHex(body.sessionId,64) ? body.sessionId.toLowerCase() : null;
       if (consent && !sessionId) return reply(res,400,{error:"invalid_session"});
       const q = await db.query(
-        "UPDATE nexusportal_devices SET last_seen_at=now(), active_session_id=$2, voice_consent=$3, session_started_at=CASE WHEN $3 THEN COALESCE(session_started_at,now()) ELSE NULL END WHERE device_id='primary' AND token_hash=$1 AND revoked_at IS NULL RETURNING device_id",
+        "UPDATE nexusportal_devices SET last_seen_at=now(), active_session_id=$2, voice_consent=$3, session_started_at=CASE WHEN $3 THEN CASE WHEN active_session_id IS DISTINCT FROM $2 THEN now() ELSE COALESCE(session_started_at,now()) END ELSE NULL END WHERE device_id='primary' AND token_hash=$1 AND revoked_at IS NULL RETURNING device_id",
         [authHash,sessionId,consent]
       );
       if (!q.rowCount) return reply(res,401,{error:"device_unpaired_or_revoked"});
@@ -76,6 +76,18 @@ module.exports = async function handler(req, res) {
         [sessionId]
       );
       return reply(res,200,{ok:true,sessionEnded:true});
+    }
+    if (action === "speech-submit") {
+      const sessionId = validHex(body.sessionId,64) ? body.sessionId.toLowerCase() : "";
+      const transcript = typeof body.transcript === "string" ? body.transcript.trim() : "";
+      const inputId = typeof body.inputId === "string" && /^[a-f0-9]{32,64}$/i.test(body.inputId) ? body.inputId.toLowerCase() : "";
+      if (!sessionId || !inputId || !transcript || transcript.length > 2000) return reply(res,400,{error:"invalid_speech_input"});
+      const q=await db.query(
+        "INSERT INTO nexusportal_speech_inputs (input_id,device_id,session_id,transcript,expires_at) SELECT $1,d.device_id,$2,$3,now()+interval '5 minutes' FROM nexusportal_devices d WHERE d.device_id='primary' AND d.token_hash=$4 AND d.revoked_at IS NULL AND d.voice_consent=true AND d.active_session_id=$2 AND d.last_seen_at>now()-interval '45 seconds' ON CONFLICT (input_id) DO NOTHING RETURNING input_id",
+        [inputId,sessionId,transcript,authHash]
+      );
+      if(!q.rowCount) return reply(res,409,{error:"session_disconnected_or_replayed"});
+      return reply(res,200,{ok:true,inputId,expiresInSeconds:300});
     }
     if (action === "command-poll") {
       const q = await db.query(
