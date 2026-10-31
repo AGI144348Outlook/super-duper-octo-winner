@@ -6,7 +6,7 @@ Contract-000 may assess independent business opportunities. Listing an idea here
 
 | Candidate | Status | Product engineering |
 | --- | --- | --- |
-| [MCW Universal AI Companion](mcw/README.md) | Proposed; validation pending | Separate repository to be selected |
+| [NexusPortal](nexusportal/README.md) | Proposed; validation pending | Separate repository to be selected |
 
 ## Filing convention
 
