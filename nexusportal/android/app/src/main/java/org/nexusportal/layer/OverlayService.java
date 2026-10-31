@@ -14,6 +14,8 @@ public class OverlayService extends Service {
  private View bubble, layer, dismissTarget;
  private WindowManager.LayoutParams bubbleParams;
  private boolean shown = false;
+ private boolean sessionActive = false;
+ private boolean annotationAuthorized = false;
  private final Handler handler = new Handler(Looper.getMainLooper());
 
  private int dp(float value) { return Math.round(value * getResources().getDisplayMetrics().density); }
@@ -175,15 +177,23 @@ public class OverlayService extends Service {
  @Override public int onStartCommand(Intent intent, int flags, int startId) {
   if (intent != null) {
    String action = intent.getAction();
-   if ("STOP".equals(action)) { stopSelf(); return START_NOT_STICKY; }
-   if ("SHOW_ANNOTATIONS".equals(action)) { shown = true; if (layer != null) layer.invalidate(); }
-   if ("TOGGLE_ANNOTATIONS".equals(action)) { shown = !shown; if (layer != null) layer.invalidate(); }
+   if ("STOP".equals(action)) { revokeAnnotations(); sessionActive = false; stopSelf(); return START_NOT_STICKY; }
+   if ("START".equals(action)) { sessionActive = true; annotationAuthorized = false; revokeAnnotations(); }
+   if ("AUTHORIZE_ANNOTATIONS".equals(action) && sessionActive) annotationAuthorized = true;
+   if ("REVOKE_ANNOTATIONS".equals(action)) { annotationAuthorized = false; revokeAnnotations(); }
+   if (sessionActive && annotationAuthorized && "SHOW_ANNOTATIONS".equals(action)) { shown = true; if (layer != null) layer.invalidate(); }
+   if (sessionActive && annotationAuthorized && "TOGGLE_ANNOTATIONS".equals(action)) { shown = !shown; if (layer != null) layer.invalidate(); }
    if ("HIDE_ANNOTATIONS".equals(action)) { shown = false; if (layer != null) layer.invalidate(); }
   }
   return START_NOT_STICKY;
  }
 
+ private void revokeAnnotations() { shown = false; if (layer != null) layer.invalidate(); }
+
  @Override public void onDestroy() {
+  revokeAnnotations();
+  annotationAuthorized = false;
+  sessionActive = false;
   handler.removeCallbacksAndMessages(null);
   if (wm != null) {
    if (bubble != null) wm.removeView(bubble);
