@@ -54,7 +54,7 @@ async function callTool(name,args,canControl) {
     if(!message || message.length>4000 || !isHexHash(sessionId) || !/^[a-f0-9]{32}$/.test(requestId)) return textResult({accepted:false,error:"invalid_speech_request"});
     if(message.split("").some(ch=>{const n=ch.charCodeAt(0);return (n<32&&n!==9&&n!==10&&n!==13)||n===127;})) return textResult({accepted:false,error:"unsupported_text"});
     const q=await db.query(
-      "INSERT INTO nexusportal_device_commands (command_id,device_id,session_id,kind,payload,expires_at) SELECT $1,d.device_id,d.active_session_id,'speak_text',jsonb_build_object('text',$3),now()+interval '45 seconds' FROM nexusportal_devices d WHERE d.device_id='primary' AND d.revoked_at IS NULL AND d.voice_consent=true AND d.active_session_id=$2 AND d.last_seen_at>now()-interval '45 seconds' ON CONFLICT (command_id) DO NOTHING RETURNING command_id",
+      "INSERT INTO nexusportal_device_commands (command_id,device_id,session_id,kind,payload,expires_at) SELECT $1,d.device_id,d.active_session_id,'speak_text',jsonb_build_object('text',$3::text),now()+interval '45 seconds' FROM nexusportal_devices d WHERE d.device_id='primary' AND d.revoked_at IS NULL AND d.voice_consent=true AND d.active_session_id=$2 AND d.last_seen_at>now()-interval '45 seconds' ON CONFLICT (command_id) DO NOTHING RETURNING command_id",
       [requestId,sessionId,message]
     );
     if(!q.rowCount) return textResult({accepted:false,error:"session_disconnected_stale_or_replayed"});
