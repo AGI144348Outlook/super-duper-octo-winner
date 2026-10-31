@@ -34,10 +34,10 @@ public class MainActivity extends Activity {
   consentStatus=heading("Annotations: denied · No remote connection",14);
   consentStatus.setTextColor(Color.LTGRAY);
   root.addView(consentStatus);
-  annotationConsent.setOnCheckedChangeListener((button,checked)->{annotationPermission=checked;consentStatus.setText(checked?"Annotations: permitted locally · No remote connection":"Annotations: denied · No remote connection");if(!checked)sendOverlay("HIDE_ANNOTATIONS");});
-  action("Preview authorized annotation (local only)",v->{if(!annotationPermission){status.setText("Enable annotation permission before previewing.");return;}startOverlay();sendOverlay("SHOW_ANNOTATIONS");status.setText("Local preview only. No ChatGPT or MCP connection.");});
-  action("Start floating %",v->startOverlay());
-  action("Show / hide sample annotation",v->sendOverlay("TOGGLE_ANNOTATIONS"));
+  annotationConsent.setOnCheckedChangeListener((button,checked)->{annotationPermission=checked;consentStatus.setText(checked?"Annotations: permitted locally · No remote connection":"Annotations: denied · No remote connection");if(checked){startOverlay();if(Settings.canDrawOverlays(this))sendOverlay("AUTHORIZE_ANNOTATIONS");}else sendOverlay("REVOKE_ANNOTATIONS");});
+  action("Preview authorized annotation (local only)",v->{if(!annotationPermission){status.setText("Enable annotation permission before previewing.");return;}sendOverlay("SHOW_ANNOTATIONS");status.setText("Local preview only. No ChatGPT or MCP connection.");});
+  action("Start floating %",v->{annotationConsent.setChecked(false);startOverlay();});
+  action("Show / hide sample annotation",v->{if(!annotationPermission){status.setText("Annotation permission is OFF.");return;}sendOverlay("TOGGLE_ANNOTATIONS");});
   action("Pause annotations",v->sendOverlay("HIDE_ANNOTATIONS"));
   action("Stop session and remove overlay",v->{annotationConsent.setChecked(false);sendOverlay("STOP");status.setText("Session stopped; annotation permission revoked.");});
   root.addView(heading("Permissions",18));
