@@ -20,6 +20,7 @@ public class MainActivity extends Activity {
  private TextView heading(String text,int size){TextView t=new TextView(this);t.setText(text);t.setTextSize(size);t.setTextColor(Color.WHITE);t.setPadding(0,18,0,10);return t;}
  private Button action(String label,View.OnClickListener click){Button b=new Button(this);b.setText(label);b.setOnClickListener(click);root.addView(b);return b;}
  @Override public void onCreate(Bundle b){super.onCreate(b);showConfiguration();}
+ @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);showConfiguration();}
  @Override protected void onResume(){super.onResume();if(status!=null)status.setText("Personal device prototype · MCP not connected · screen observation OFF");syncSessionState();}
  private void syncSessionState(){if(annotationConsent==null)return;boolean active=getSharedPreferences("nexusportal_session",MODE_PRIVATE).getBoolean("active",false);boolean allowed=active && getSharedPreferences("nexusportal_session",MODE_PRIVATE).getBoolean("annotations",false);syncing=true;annotationConsent.setChecked(allowed);annotationPermission=allowed;syncing=false;if(consentStatus!=null)consentStatus.setText((allowed?"Annotations: granted":"Annotations: denied")+(active?" · Local session active":" · No active session")+" · MCP disconnected");}
  private void showConfiguration(){
