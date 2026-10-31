@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
     if (action === "pair-start") {
       const {pairingId, codeHash, deviceTokenHash} = body;
       if (!validHex(pairingId) || !validHex(codeHash) || !validHex(deviceTokenHash)) return reply(res,400,{error:"invalid_pairing_request"});
-      await db.query("DELETE FROM nexusportal_pairing_requests WHERE expires_at < now()");
+      await db.query("DELETE FROM nexusportal_pairing_requests WHERE expires_at < now() OR approved_at IS NULL");
       await db.query(
         "INSERT INTO nexusportal_pairing_requests (pairing_id,pairing_code_hash,device_token_hash,expires_at) VALUES ($1,$2,$3,now()+interval '10 minutes')",
         [pairingId,codeHash.toLowerCase(),deviceTokenHash.toLowerCase()]
