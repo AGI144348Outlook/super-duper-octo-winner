@@ -30,6 +30,7 @@ final class PortalClient {
     if (token.trim().length() < 32) throw new IllegalArgumentException("Enter a separate, revocable bearer token");
     conn = (HttpURLConnection) url.openConnection();
     conn.setRequestMethod("POST");
+    conn.setInstanceFollowRedirects(false);
     conn.setRequestProperty("Authorization","Bearer "+token.trim());
     conn.setRequestProperty("Content-Type","application/json");
     conn.setRequestProperty("Accept","application/json");
