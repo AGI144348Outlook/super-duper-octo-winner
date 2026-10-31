@@ -26,14 +26,15 @@ const tools=[
   tool("revoke_device","Revoke the paired Android phone immediately and cancel its queued speech commands. Requires the user to ask to disconnect or revoke.",{})
 ];
 function cleanToolParams(v) { return v && typeof v==="object" && !Array.isArray(v) ? v : {}; }
-async function callTool(name,args) {
+async function callTool(name,args,canControl) {
   if(name==="portal_status") {
     const q=await db.query("SELECT revoked_at,last_seen_at,active_session_id,voice_consent FROM nexusportal_devices WHERE device_id='primary'");
     const d=q.rows[0];
     const connected=!!d && !d.revoked_at && d.last_seen_at && (Date.now()-new Date(d.last_seen_at).getTime()<45000);
     const active=connected && d.voice_consent===true && typeof d.active_session_id==="string";
-    return textResult({mcp:"authenticated",android:connected?"connected":"not_connected",voice:active?"ready":"off",sessionId:active?d.active_session_id:null,annotations:"not_available",screenObservation:false,touchControl:false});
+    return textResult({mcp:"authenticated",android:connected?"connected":"not_connected",voice:active?"active":"off",sessionId:canControl&&active?d.active_session_id:null,annotations:"not_available",screenObservation:false,touchControl:false});
   }
+  if(name!=="portal_status"&&!canControl) return textResult({error:"chatgpt_connector_required"});
   if(name==="approve_device_pairing") {
     const code=typeof args.code==="string"?args.code.trim():"";
     if(!/^[0-9]{8}$/.test(code)) return textResult({approved:false,error:"invalid_pairing_code"});
@@ -90,7 +91,9 @@ module.exports=async function handler(req,res) {
   const bearer=header.startsWith("Bearer ")?header.slice(7):"";
   const candidate=pathToken||bearer;
   const hash=crypto.createHash("sha256").update(candidate).digest("hex");
-  const connectorValid=active.some(entry=>equal(hash,entry.sha256.toLowerCase()));
+  const caller=active.find(entry=>equal(hash,entry.sha256.toLowerCase()));
+  const connectorValid=!!caller;
+  const canControl=!!caller&&/^chatgpt(?:[-_].*)?$/i.test(caller.name);
   const masterValid=!pathToken&&master.length>=32&&bearer.length>0&&equal(bearer,master);
   if(!connectorValid&&!masterValid) return json(res,401,{error:"unauthorized"});
   const body=typeof req.body==="string"?(()=>{try{return JSON.parse(req.body)}catch{return null}})():req.body;
@@ -104,7 +107,7 @@ module.exports=async function handler(req,res) {
     const name=body.params?.name;
     const args=cleanToolParams(body.params?.arguments);
     try {
-      const result=await callTool(name,args);
+      const result=await callTool(name,args,canControl);
       if(!result) return json(res,200,error(id,-32602,"Tool not available"));
       return json(res,200,ok(id,result));
     } catch(e) {
