@@ -1,7 +1,40 @@
 package org.nexusportal.layer;
-import android.app.Activity;import android.os.Bundle;import android.os.Build;import android.provider.Settings;import android.content.Intent;import android.net.Uri;import android.graphics.Color;import android.view.View;import android.widget.*;
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.Build;
+import android.provider.Settings;
+import android.content.Intent;
+import android.net.Uri;
+import android.graphics.Color;
+import android.view.View;
+import android.widget.*;
+
 public class MainActivity extends Activity {
  private TextView status;
- @Override public void onCreate(Bundle b){super.onCreate(b);LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(36,64,36,36);l.setBackgroundColor(Color.rgb(16,24,39));TextView title=new TextView(this);title.setText("NexusPortal Layer");title.setTextSize(25);title.setTextColor(Color.WHITE);l.addView(title);status=new TextView(this);status.setTextColor(Color.LTGRAY);status.setText("Local overlay only · no screen capture · no AI connection");l.addView(status);Button start=new Button(this);start.setText("Start floating % overlay");start.setOnClickListener(v->startOverlay());l.addView(start);Button stop=new Button(this);stop.setText("Stop overlay");stop.setOnClickListener(v->stopService(new Intent(this,OverlayService.class)));l.addView(stop);setContentView(l);}
- private void startOverlay(){if(!Settings.canDrawOverlays(this)){status.setText("Grant Draw over other apps, then return and tap Start again.");Intent i=new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName()));startActivity(i);return;}Intent i=new Intent(this,OverlayService.class);if(Build.VERSION.SDK_INT>=26)startForegroundService(i);else startService(i);status.setText("Overlay requested. Tap floating % to show/hide sample marks.");}
+ private LinearLayout root;
+ private final int bg=Color.rgb(16,24,39), accent=Color.rgb(109,227,212);
+ private TextView heading(String text,int size){TextView t=new TextView(this);t.setText(text);t.setTextSize(size);t.setTextColor(Color.WHITE);t.setPadding(0,18,0,10);return t;}
+ private Button action(String label,View.OnClickListener click){Button b=new Button(this);b.setText(label);b.setOnClickListener(click);root.addView(b);return b;}
+ @Override public void onCreate(Bundle b){super.onCreate(b);showConfiguration();}
+ @Override protected void onResume(){super.onResume();if(status!=null)status.setText("Personal device prototype · MCP not connected · screen observation OFF");}
+ private void showConfiguration(){
+  ScrollView scroll=new ScrollView(this);root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(36,44,36,48);root.setBackgroundColor(bg);scroll.addView(root);
+  root.addView(heading("NexusPortal  %",26));root.addView(heading("AI configuration",20));
+  status=heading("Personal device prototype · MCP not connected · screen observation OFF",14);status.setTextColor(Color.LTGRAY);root.addView(status);
+  root.addView(heading("My AI connections",18));
+  TextView note=heading("MCP connection slots will appear here once verified. No AI platform is connected yet.",14);note.setTextColor(Color.LTGRAY);root.addView(note);
+  root.addView(heading("Session controls",18));
+  action("Start floating %",v->startOverlay());
+  action("Show / hide sample annotation",v->sendOverlay("TOGGLE_ANNOTATIONS"));
+  action("Pause annotations",v->sendOverlay("HIDE_ANNOTATIONS"));
+  action("Stop session and remove overlay",v->{sendOverlay("STOP");status.setText("Session stopped.");});
+  root.addView(heading("Permissions",18));
+  TextView permissions=heading("Overlay: user-granted Android permission.\nScreen observation: OFF (not implemented).\nAI commands: OFF (not connected).\nTouch control: not available.",14);permissions.setTextColor(Color.LTGRAY);root.addView(permissions);
+  setContentView(scroll);
+ }
+ private void sendOverlay(String command){Intent i=new Intent(this,OverlayService.class);i.setAction(command);if(Build.VERSION.SDK_INT>=26)startForegroundService(i);else startService(i);}
+ private void startOverlay(){
+  if(!Settings.canDrawOverlays(this)){status.setText("Grant Draw over other apps, return, then tap Start floating %.");Intent i=new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName()));startActivity(i);return;}
+  sendOverlay("START");status.setText("Overlay started. Tap floating % to reopen this configuration screen.");
+ }
 }
