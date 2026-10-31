@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
   });
   action("Clear MCP fields",v->{endpointInput.setText("");keyInput.setText("");networkStatus.setText("MCP credentials cleared from fields.");});
   root.addView(heading("Voice (local preview only)",18));
-  TextView voiceNote=heading("Speak using Android's speech-recognition dialog; playback uses the phone's text-to-speech engine. No audio or transcript is sent to MCP or ChatGPT.",14);voiceNote.setTextColor(Color.LTGRAY);root.addView(voiceNote);
+  TextView voiceNote=heading("Speak using Android's speech-recognition dialog; playback uses the phone's text-to-speech engine. No audio or transcript is sent by NexusPortal to MCP or ChatGPT; Android's chosen recognizer may use its own cloud service.",14);voiceNote.setTextColor(Color.LTGRAY);root.addView(voiceNote);
   voiceStatus=heading("Microphone inactive. Speaker idle.",14);voiceStatus.setTextColor(Color.LTGRAY);root.addView(voiceStatus);
   action("Tap to speak (Android speech dialog)",v->{
    Intent listen=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
