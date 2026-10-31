@@ -27,7 +27,7 @@ module.exports = async function handler(req,res) {
   if(master.length<32 && active.length===0) return json(res,503,{error:"mcp_not_configured"});
   const header=req.headers.authorization||"";
   const requestPath=(req.url||"").split("?")[0];
-  const pathMatch=requestPath.match(/^\\/api\\/mcp\\/([A-Za-z0-9_-]{32,256})\\/?$/);
+  const pathMatch=requestPath.match(new RegExp("^/api/mcp/([A-Za-z0-9_-]{32,256})/?$"));
   const pathToken=pathMatch ? pathMatch[1] : "";
   const bearer=header.startsWith("Bearer ") ? header.slice(7) : "";
   const candidate=pathToken || bearer;
