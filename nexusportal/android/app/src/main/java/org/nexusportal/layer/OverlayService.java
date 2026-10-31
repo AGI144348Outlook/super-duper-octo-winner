@@ -104,13 +104,19 @@ public class OverlayService extends Service {
 
  private void onBubbleTap() {
   android.content.SharedPreferences prefs=getSharedPreferences("nexusportal_companion",MODE_PRIVATE);
-  if(prefs.getBoolean("app_open",false)) {
-   prefs.edit().putBoolean("app_open",false).apply();
-   Intent home=new Intent(Intent.ACTION_MAIN);
-   home.addCategory(Intent.CATEGORY_HOME);
-   home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-   try { startActivity(home); } catch(Exception e) { openConfiguration(); }
-  } else openConfiguration();
+  String pkg=prefs.getString("package","");
+  if(!pkg.isEmpty()) {
+   Intent launch=getPackageManager().getLaunchIntentForPackage(pkg);
+   if(launch!=null) {
+    launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+    try {
+     startActivity(launch);
+     prefs.edit().putBoolean("app_open",true).apply();
+     return;
+    } catch(Exception ignored) { }
+   }
+  }
+  openConfiguration();
  }
  private void setDismissVisible(boolean visible) {
   if (dismissTarget != null) dismissTarget.setVisibility(visible ? View.VISIBLE : View.GONE);
