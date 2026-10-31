@@ -77,6 +77,13 @@ module.exports = async function handler(req, res) {
       );
       return reply(res,200,{ok:true,sessionEnded:true});
     }
+    if (action === "device-revoke") {
+      const q=await db.query("UPDATE nexusportal_devices SET revoked_at=now(),active_session_id=NULL,voice_consent=false,session_started_at=NULL WHERE device_id='primary' AND token_hash=$1 AND revoked_at IS NULL RETURNING device_id",[authHash]);
+      if(!q.rowCount)return reply(res,401,{error:"device_unpaired_or_revoked"});
+      await db.query("UPDATE nexusportal_device_commands SET status='revoked' WHERE device_id='primary' AND status IN ('queued','claimed')");
+      await db.query("DELETE FROM nexusportal_pairing_requests");
+      return reply(res,200,{ok:true,revoked:true});
+    }
     if (action === "speech-submit") {
       const sessionId = validHex(body.sessionId,64) ? body.sessionId.toLowerCase() : "";
       const transcript = typeof body.transcript === "string" ? body.transcript.trim() : "";
