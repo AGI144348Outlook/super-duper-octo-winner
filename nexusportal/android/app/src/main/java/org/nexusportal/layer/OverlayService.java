@@ -56,9 +56,20 @@ public class OverlayService extends Service {
  private void openConfiguration() {
   Intent config = new Intent(this, MainActivity.class);
   config.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+  config.putExtra("companion_panel",true);
   startActivity(config);
  }
 
+ private void onBubbleTap() {
+  android.content.SharedPreferences prefs=getSharedPreferences("nexusportal_companion",MODE_PRIVATE);
+  if(prefs.getBoolean("app_open",false)) {
+   prefs.edit().putBoolean("app_open",false).apply();
+   Intent home=new Intent(Intent.ACTION_MAIN);
+   home.addCategory(Intent.CATEGORY_HOME);
+   home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+   try { startActivity(home); } catch(Exception e) { openConfiguration(); }
+  } else openConfiguration();
+ }
  private void setDismissVisible(boolean visible) {
   if (dismissTarget != null) dismissTarget.setVisibility(visible ? View.VISIBLE : View.GONE);
  }
@@ -161,7 +172,7 @@ public class OverlayService extends Service {
         wm.updateViewLayout(bubble, bubbleParams);
        }
       } else {
-       openConfiguration();
+       onBubbleTap();
       }
       return true;
      case MotionEvent.ACTION_CANCEL:
@@ -181,6 +192,7 @@ public class OverlayService extends Service {
    String action = intent.getAction();
    if ("STOP".equals(action)) { revokeAnnotations(); annotationAuthorized = false; sessionActive = false; publishSessionState(); stopSelf(); return START_NOT_STICKY; }
    if ("START".equals(action)) { sessionActive = true; annotationAuthorized = false; revokeAnnotations(); }
+   if ("ENSURE_STARTED".equals(action) && !sessionActive) { sessionActive = true; annotationAuthorized = false; revokeAnnotations(); }
    if ("AUTHORIZE_ANNOTATIONS".equals(action) && sessionActive) annotationAuthorized = true;
    if ("REVOKE_ANNOTATIONS".equals(action)) { annotationAuthorized = false; revokeAnnotations(); }
    publishSessionState();
@@ -198,6 +210,7 @@ public class OverlayService extends Service {
   annotationAuthorized = false;
   sessionActive = false;
   publishSessionState();
+  getSharedPreferences("nexusportal_companion",MODE_PRIVATE).edit().putBoolean("app_open",false).apply();
   handler.removeCallbacksAndMessages(null);
   if (wm != null) {
    if (bubble != null) wm.removeView(bubble);
