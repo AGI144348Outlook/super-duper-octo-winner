@@ -33,7 +33,18 @@ public class MainActivity extends Activity {
  private Button action(String label,View.OnClickListener click){Button b=new Button(this);b.setText(label);b.setOnClickListener(click);root.addView(b);return b;}
  @Override public void onCreate(Bundle b){super.onCreate(b);speech=new TextToSpeech(this,result->{speechReady=result==TextToSpeech.SUCCESS;if(speechReady)speech.setLanguage(Locale.getDefault());});showConfiguration();}
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);showConfiguration();}
- @Override protected void onResume(){super.onResume();if(status!=null)status.setText("Personal device prototype · MCP not connected · screen observation OFF");syncSessionState();}
+ @Override protected void onResume(){super.onResume();if(status!=null)status.setText("Screen observation OFF · Touch control OFF");refreshRelayStatus();syncSessionState();}
+ private void refreshRelayStatus(){
+  if(networkStatus==null)return;
+  if(!DeviceRelayClient.paired(this)){
+   String pending=SecureDeviceSecretStore.get(this,"pair_code");
+   networkStatus.setText(pending==null?"Phone not paired · Tap Pair this phone to connect":"Phone not paired · Approve code "+pending+" in ChatGPT, then check pairing");
+   return;
+  }
+  DeviceRelayClient.heartbeat(this,(result,error)->{
+   if(networkStatus!=null)networkStatus.setText(error==null?"Relay connected · Phone paired · "+(getSharedPreferences("nexusportal_device",MODE_PRIVATE).getBoolean("voice_active",false)?"Voice session active":"Voice off"):"Phone paired · Relay disconnected");
+  });
+ }
  private void syncSessionState(){if(annotationConsent==null)return;boolean active=getSharedPreferences("nexusportal_session",MODE_PRIVATE).getBoolean("active",false);boolean allowed=active && getSharedPreferences("nexusportal_session",MODE_PRIVATE).getBoolean("annotations",false);syncing=true;annotationConsent.setChecked(allowed);annotationPermission=allowed;syncing=false;if(consentStatus!=null)consentStatus.setText((allowed?"Annotations: granted":"Annotations: denied")+(active?" · Local session active":" · No active session")+" · MCP disconnected");}
  private void showConfiguration(){
   ScrollView scroll=new ScrollView(this);root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(36,44,36,48);root.setBackgroundColor(bg);scroll.addView(root);
@@ -45,28 +56,52 @@ public class MainActivity extends Activity {
   action("Claude · Open app (not connected)",v->launchCompanion("Claude","com.anthropic.claude"));
   action("Gemini · Open app (not connected)",v->launchCompanion("Gemini","com.google.android.apps.bard"));
   root.addView(heading("My AI connections",18));
-  TextView note=heading("MCP connection slots will appear here once verified. No AI platform is connected yet.",14);note.setTextColor(Color.LTGRAY);root.addView(note);
-  root.addView(heading("MCP connection (manual, opt-in)",18));
-  TextView mcpNote=heading("This checks an authenticated MCP ping only. It does not pair this phone, transmit screen content or enable AI voice. Use a separate Android connector token, not the master secret.",14);
-  mcpNote.setTextColor(Color.LTGRAY);root.addView(mcpNote);
-  endpointInput=new EditText(this);endpointInput.setSingleLine(true);endpointInput.setTextColor(Color.WHITE);
-  endpointInput.setHint("https://your-project.vercel.app/api/mcp");endpointInput.setHintTextColor(Color.GRAY);
-  endpointInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_URI);root.addView(endpointInput);
-  keyInput=new EditText(this);keyInput.setSingleLine(true);keyInput.setTextColor(Color.WHITE);
-  keyInput.setHint("Dedicated Android bearer token (not saved)");keyInput.setHintTextColor(Color.GRAY);
-  keyInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);root.addView(keyInput);
-  networkStatus=heading("MCP check not run. Device session disconnected.",14);networkStatus.setTextColor(Color.LTGRAY);root.addView(networkStatus);
-  action("Check authenticated MCP ping",v->{
-   String url=endpointInput.getText().toString(),secret=keyInput.getText().toString();
-   networkStatus.setText("Checking HTTPS endpoint...");
-   PortalClient.check(url,secret,(ok,message)->{
-    if(networkStatus!=null)networkStatus.setText(message);
-    if(status!=null)status.setText(ok?"MCP reachable (ping only) · no Android relay or screen observation":"MCP check failed · screen observation OFF");
+  TextView note=heading("ChatGPT MCP relay connection is separate from pairing. Phone and voice status appear below.",14);note.setTextColor(Color.LTGRAY);root.addView(note);
+  root.addView(heading("Phone ↔ ChatGPT connection",18));
+  TextView mcpNote=heading("Pair this phone with a one-time code. No long-lived token is typed or shown. Pairing is separate from voice consent; screen observation and touch control stay OFF.",14);mcpNote.setTextColor(Color.LTGRAY);root.addView(mcpNote);
+  networkStatus=heading("Relay status: disconnected · Phone: not paired · Voice: off",14);networkStatus.setTextColor(Color.LTGRAY);root.addView(networkStatus);
+  action("Pair this phone",v->{
+   networkStatus.setText("Requesting a one-time pairing code...");
+   DeviceRelayClient.beginPairing(this,(code,error)->{
+    if(networkStatus==null)return;
+    if(error!=null){networkStatus.setText("Pairing could not start: "+error);return;}
+    networkStatus.setText("Pair code: "+code+" · In this ChatGPT NexusPortal chat, ask me to approve this code. Expires in 10 minutes.");
    });
   });
-  action("Clear MCP fields",v->{endpointInput.setText("");keyInput.setText("");networkStatus.setText("MCP credentials cleared from fields.");});
-  root.addView(heading("Voice (local preview only)",18));
-  TextView voiceNote=heading("Speak using Android's speech-recognition dialog; playback uses the phone's text-to-speech engine. No audio or transcript is sent by NexusPortal to MCP or ChatGPT; Android's chosen recognizer may use its own cloud service.",14);voiceNote.setTextColor(Color.LTGRAY);root.addView(voiceNote);
+  action("Check pairing approval",v->{
+   networkStatus.setText("Checking pairing...");
+   DeviceRelayClient.checkPairing(this,(result,error)->{
+    if(networkStatus==null)return;
+    if(error!=null){networkStatus.setText("Phone not paired · "+error);return;}
+    if(result!=null&&result.optBoolean("approved",false)){SecureDeviceSecretStore.remove(this,"pair_code");networkStatus.setText("Relay connected · Phone paired · Voice off");}
+    else networkStatus.setText("Pair code is waiting for approval in ChatGPT.");
+   });
+  });
+  action("Start voice session",v->{
+   if(!DeviceRelayClient.paired(this)){networkStatus.setText("Pair this phone before starting a voice session.");return;}
+   networkStatus.setText("Starting voice session...");
+   DeviceRelayClient.setVoiceSession(this,true,(result,error)->{
+    if(error!=null){networkStatus.setText("Voice session did not start: "+error);return;}
+    sendOverlay("VOICE_START");
+    networkStatus.setText("Relay connected · Phone paired · Voice session active");
+   });
+  });
+  action("Stop voice session",v->{
+   DeviceRelayClient.setVoiceSession(this,false,(result,error)->{
+    sendOverlay("VOICE_STOP");
+    networkStatus.setText(error==null?"Relay connected · Phone paired · Voice off":"Voice stop requested · "+error);
+   });
+  });
+  action("Revoke and forget this phone",v->{
+   DeviceRelayClient.revoke(this,(result,error)->{
+    sendOverlay("VOICE_STOP");
+    SecureDeviceSecretStore.clear(this);
+    getSharedPreferences("nexusportal_device",MODE_PRIVATE).edit().clear().apply();
+    networkStatus.setText(error==null?"Phone revoked · Not connected":"Local credentials cleared · Server revoke could not be confirmed");
+   });
+  });
+  root.addView(heading("Voice (tap to listen; bubble speaks replies)",18));
+  TextView voiceNote=heading("Tap to open Android speech recognition. Audio goes only to the Android-selected recognizer; NexusPortal sends no raw audio. After recognition, tap Send transcript to ChatGPT. ChatGPT can then speak its reply through the bubble during your active voice session.",14);voiceNote.setTextColor(Color.LTGRAY);root.addView(voiceNote);
   voiceStatus=heading("Microphone inactive. Speaker idle.",14);voiceStatus.setTextColor(Color.LTGRAY);root.addView(voiceStatus);
   action("Tap to speak (Android speech dialog)",v->{
    Intent listen=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -75,6 +110,13 @@ public class MainActivity extends Activity {
    listen.putExtra(RecognizerIntent.EXTRA_PROMPT,"NexusPortal local voice preview");
    try { startActivityForResult(listen,SPEECH_REQUEST);voiceStatus.setText("Speech dialog opened; microphone permission handled by the provider."); }
    catch(Exception e){voiceStatus.setText("No compatible speech recognizer available on this phone.");}
+  });
+  action("Send last transcript to ChatGPT",v->{
+   if(lastTranscript.isEmpty()){voiceStatus.setText("No transcript to send.");return;}
+   voiceStatus.setText("Sending transcript with your active session consent...");
+   DeviceRelayClient.sendTranscript(this,lastTranscript,(result,error)->{
+    if(voiceStatus!=null)voiceStatus.setText(error==null?"Transcript sent to the active ChatGPT relay session. Ask ChatGPT to retrieve it.":"Transcript not sent: "+error);
+   });
   });
   action("Read last transcript aloud",v->{
    if(lastTranscript.isEmpty()){voiceStatus.setText("No local transcript yet.");return;}
@@ -128,7 +170,7 @@ public class MainActivity extends Activity {
    if(resultCode==RESULT_OK && data!=null){
     ArrayList<String> text=data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
     lastTranscript=text!=null && !text.isEmpty()?text.get(0):"";
-    if(voiceStatus!=null)voiceStatus.setText(lastTranscript.isEmpty()?"No speech recognized.":"Recognized locally: "+lastTranscript);
+    if(voiceStatus!=null)voiceStatus.setText(lastTranscript.isEmpty()?"No speech recognized.":"Recognized by Android. Tap Send transcript to ChatGPT to share this text.");
    } else if(voiceStatus!=null) voiceStatus.setText("Speech canceled. Microphone inactive.");
   }
  }

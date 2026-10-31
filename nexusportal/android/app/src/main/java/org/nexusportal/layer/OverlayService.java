@@ -7,6 +7,10 @@ import android.os.*;
 import android.provider.Settings;
 import android.view.*;
 import android.widget.*;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+import java.util.Locale;
+import org.json.JSONObject;
 
 public class OverlayService extends Service {
  private static final String CHANNEL = "nexusportal_overlay";
@@ -16,6 +20,10 @@ public class OverlayService extends Service {
  private boolean shown = false;
  private boolean sessionActive = false;
  private boolean annotationAuthorized = false;
+ private TextToSpeech speaker;
+ private boolean speakerReady=false;
+ private boolean relayPollInFlight=false;
+ private long lastRelayHeartbeat=0;
  private void publishSessionState() { getSharedPreferences("nexusportal_session", MODE_PRIVATE).edit().putBoolean("active", sessionActive).putBoolean("annotations", sessionActive && annotationAuthorized).apply(); }
  private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -31,8 +39,42 @@ public class OverlayService extends Service {
   createNotification();
   createWindows();
   publishSessionState();
+  speaker=new TextToSpeech(this,result->{speakerReady=result==TextToSpeech.SUCCESS;if(speakerReady)speaker.setLanguage(Locale.getDefault());});
+  startRelayTicker();
  }
 
+ private final Runnable relayTick=new Runnable(){@Override public void run(){
+  if(DeviceRelayClient.paired(OverlayService.this)){
+   long now=System.currentTimeMillis();
+   if(now-lastRelayHeartbeat>10000){lastRelayHeartbeat=now;DeviceRelayClient.heartbeat(OverlayService.this,(r,e)->{});}
+   boolean active=getSharedPreferences("nexusportal_device",MODE_PRIVATE).getBoolean("voice_active",false);
+   if(active&&speakerReady&&!relayPollInFlight){
+    relayPollInFlight=true;
+    DeviceRelayClient.poll(OverlayService.this,(r,e)->{
+     relayPollInFlight=false;
+     if(e==null&&r!=null){JSONObject command=r.optJSONObject("command");if(command!=null)playRelayCommand(command);}
+    });
+   }
+  }
+  if(handler!=null)handler.postDelayed(this,2500);
+ }};
+ private void startRelayTicker(){handler.removeCallbacks(relayTick);handler.post(relayTick);}
+ private void playRelayCommand(JSONObject command){
+  String commandId=command.optString("command_id","");
+  String sessionId=command.optString("session_id","");
+  String current=DeviceRelayClient.sessionId(this);
+  JSONObject payload=command.optJSONObject("payload");
+  String text=payload==null?"":payload.optString("text","");
+  if(!"speak_text".equals(command.optString("kind"))||text.isEmpty()||!sessionId.equals(current)||!speakerReady){
+   return;
+  }
+  speaker.setOnUtteranceProgressListener(new UtteranceProgressListener(){
+   @Override public void onStart(String id){}
+   @Override public void onDone(String id){DeviceRelayClient.ack(OverlayService.this,commandId,sessionId);}
+   @Override public void onError(String id){DeviceRelayClient.ack(OverlayService.this,commandId,sessionId);}
+  });
+  speaker.speak(text,TextToSpeech.QUEUE_ADD,null,commandId);
+ }
  private void createNotification() {
   NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
   nm.createNotificationChannel(new NotificationChannel(CHANNEL, "NexusPortal overlay", NotificationManager.IMPORTANCE_LOW));
@@ -192,10 +234,16 @@ public class OverlayService extends Service {
    String action = intent.getAction();
    if ("STOP".equals(action)) { revokeAnnotations(); annotationAuthorized = false; sessionActive = false; publishSessionState(); stopSelf(); return START_NOT_STICKY; }
    if ("START".equals(action)) { sessionActive = true; annotationAuthorized = false; revokeAnnotations(); }
+   if ("VOICE_START".equals(action)) { startRelayTicker(); }
+   if ("VOICE_STOP".equals(action)) {
+    if(speaker!=null)speaker.stop();
+    DeviceRelayClient.setVoiceSession(this,false,(r,e)->{});
+   }
    if ("ENSURE_STARTED".equals(action) && !sessionActive) { sessionActive = true; annotationAuthorized = false; revokeAnnotations(); }
    if ("AUTHORIZE_ANNOTATIONS".equals(action) && sessionActive) annotationAuthorized = true;
    if ("REVOKE_ANNOTATIONS".equals(action)) { annotationAuthorized = false; revokeAnnotations(); }
    publishSessionState();
+   if ("START".equals(action) || "ENSURE_STARTED".equals(action)) startRelayTicker();
    if (sessionActive && annotationAuthorized && "SHOW_ANNOTATIONS".equals(action)) { shown = true; if (layer != null) layer.invalidate(); }
    if (sessionActive && annotationAuthorized && "TOGGLE_ANNOTATIONS".equals(action)) { shown = !shown; if (layer != null) layer.invalidate(); }
    if ("HIDE_ANNOTATIONS".equals(action)) { shown = false; if (layer != null) layer.invalidate(); }
@@ -212,6 +260,8 @@ public class OverlayService extends Service {
   publishSessionState();
   getSharedPreferences("nexusportal_companion",MODE_PRIVATE).edit().putBoolean("app_open",false).apply();
   handler.removeCallbacksAndMessages(null);
+  if(getSharedPreferences("nexusportal_device",MODE_PRIVATE).getBoolean("voice_active",false))DeviceRelayClient.setVoiceSession(this,false,(r,e)->{});
+  if(speaker!=null){speaker.stop();speaker.shutdown();speaker=null;}
   if (wm != null) {
    if (bubble != null) wm.removeView(bubble);
    if (dismissTarget != null) wm.removeView(dismissTarget);

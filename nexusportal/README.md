@@ -1,22 +1,22 @@
-# NexusPortal — renderer foundation
+# NexusPortal
 
-This folder contains a **standalone, browser-testable renderer foundation**, separate from Contract-000 governance and Echo kernel. NexusPortal is the product; MCW denotes connection capability only.
+NexusPortal contains a standalone browser renderer and an Android prototype. The renderer is a local demo; Android pairing and voice operate through the authenticated Vercel MCP relay.
 
-## Open
+## Android ↔ ChatGPT voice relay
 
-Open [renderer/index.html](renderer/index.html) in a browser, or serve this directory as static files. The demo requires no AI provider, Android permissions or backend. It renders **local demonstration commands only**.
+See [the v0.7 implementation notes](bridges/mcp-v0.7-implementation.md) for the pairing flow, relay tools, deployment requirements, security limits, and phone setup. The phone displays a one-time code; there is no long-lived manual bearer token to type. Speech is user-initiated and turn-by-turn.
+
+## Renderer
+
+Open [renderer/index.html](renderer/index.html) in a browser, or serve this directory as static files. The renderer demo requires no AI provider or Android permission and renders local demonstration commands only.
 
 ## Structure
 
-- [renderer/](renderer/README.md) — HTML Canvas and `%` controls, annotation command schema
-- [adapters/](adapters/README.md) — future Android, Vercel and provider integration boundaries
-- [research/](research/README.md) — Mashet Pad architectural extraction, provenance and symbolic/bidi research
-- [Issue #1](https://github.com/AGI144348Outlook/super-duper-octo-winner/issues/1) — bidirectional text and symbolic notation research questions
+- [renderer/](renderer/README.md) — HTML Canvas and % controls, annotation command schema
+- [adapters/](adapters/README.md) — Android, Vercel and provider integration boundaries
+- [bridges/](bridges/README.md) — MCP relay and message contracts
+- [research/](research/README.md) — architecture, provenance, symbolic and bidirectional-text research
 
-## Non-goals of this foundation
+## Safety boundaries
 
-No MediaProjection, system overlay, live AI pairing, native Android build, account system, or autonomous device control is implemented. A browser Canvas cannot draw over other Android apps. No CI workflows or tests are configured or triggered by these files.
-
-## Source handling
-
-Mashet Pad v0.2 was provided as a ZIP for architectural review. This foundation is newly written and does not include Mashet Pad source, its keystore, or its generated Unicode tables. Reuse requires explicit adapter design and provenance tracking.
+The Android app does not read other apps' screens or perform touch control. Voice input is a tap-launched Android recognition dialog; only a transcript explicitly submitted by the user reaches the relay. Bubble speech uses Android text-to-speech for a bounded ChatGPT command during an active user-approved voice session. Remote app updates are not part of the relay.

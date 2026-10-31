@@ -1,0 +1,9 @@
+{
+  "name": "nexusportal-relay",
+  "version": "0.7.0",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
+}
