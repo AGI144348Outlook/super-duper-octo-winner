@@ -12,8 +12,13 @@ module.exports = async function handler(req,res) {
   // Never silently enable anonymous access.
   if(!secret || secret.length<32) return json(res,503,{error:"mcp_not_configured"});
   const header=req.headers.authorization||"";
+  // Capability URL compatibility: /api/mcp/<secret> for MCP clients offering No sign-in.
+  // The capability is checked using the same constant-time comparison as bearer auth.
+  const requestPath=(req.url||"").split("?")[0];
+  const pathMatch=requestPath.match(/^\/api\/mcp\/([A-Za-z0-9_-]{32,256})\/?$/);
+  const pathToken=pathMatch ? pathMatch[1] : "";
   const crypto=require("crypto");
-  const supplied=header.startsWith("Bearer ") ? header.slice(7) : "";
+  const supplied=header.startsWith("Bearer ") ? header.slice(7) : pathToken;
   const a=Buffer.from(supplied),b=Buffer.from(secret);
   if(a.length!==b.length || !crypto.timingSafeEqual(a,b)) return json(res,401,{error:"unauthorized"});
   const body=typeof req.body==="string" ? (()=>{try{return JSON.parse(req.body)}catch{return null}})() : req.body;
