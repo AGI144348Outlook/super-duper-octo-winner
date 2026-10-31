@@ -160,13 +160,14 @@ public class OverlayService extends Service {
   setDismissVisible(false);
 
   TextView b = new TextView(this);
-  b.setText("%");
-  b.setTextSize(26);
+  b.setText("🎙\nVOICE");
+  b.setTextSize(14);
+  b.setContentDescription("Open selected AI app for voice chat");
   b.setTextColor(Color.rgb(17, 34, 53));
   b.setGravity(Gravity.CENTER);
   b.setBackgroundColor(Color.rgb(109, 227, 212));
   bubbleParams = new WindowManager.LayoutParams(
-   dp(56), dp(56), type, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+   dp(72), dp(72), type, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
   bubbleParams.gravity = Gravity.TOP | Gravity.LEFT;
   bubbleParams.x = dp(24);
   bubbleParams.y = dp(190);
