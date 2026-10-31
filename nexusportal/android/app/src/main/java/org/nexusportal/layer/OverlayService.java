@@ -176,6 +176,7 @@ public class OverlayService extends Service {
   if (intent != null) {
    String action = intent.getAction();
    if ("STOP".equals(action)) { stopSelf(); return START_NOT_STICKY; }
+   if ("SHOW_ANNOTATIONS".equals(action)) { shown = true; if (layer != null) layer.invalidate(); }
    if ("TOGGLE_ANNOTATIONS".equals(action)) { shown = !shown; if (layer != null) layer.invalidate(); }
    if ("HIDE_ANNOTATIONS".equals(action)) { shown = false; if (layer != null) layer.invalidate(); }
   }
