@@ -22,6 +22,7 @@ const tools=[
   tool("portal_status","Report whether the authenticated relay and paired Android phone are online. Includes the current phone voice-session id only while the user has explicitly enabled a voice session.",{}),
   tool("approve_device_pairing","Approve the one-time 8-digit code currently displayed in NexusPortal on the phone. The phone must initiate pairing first. Do not approve a code the user has not shown you.",{code:{type:"string",pattern:"^[0-9]{8}$"}},["code"]),
   tool("speak_text","Speak a short ChatGPT reply on the paired phone using Android text-to-speech. Requires an active, user-approved NexusPortal voice session. Use a fresh random 32-character hexadecimal requestId for each new utterance and pass the current sessionId from portal_status.",{text:{type:"string",minLength:1,maxLength:4000},sessionId:{type:"string",pattern:"^[a-fA-F0-9]{64}$"},requestId:{type:"string",pattern:"^[a-fA-F0-9]{32}$"}},["text","sessionId","requestId"]),
+  tool("get_speech_transcript","Retrieve and consume one transcript that the user explicitly submitted from the Android speech-recognition dialog. Requires the current active voice session; each transcript is returned once and expires after five minutes.",{sessionId:{type:"string",pattern:"^[a-fA-F0-9]{64}$"}},["sessionId"]),
   tool("revoke_device","Revoke the paired Android phone immediately and cancel its queued speech commands. Requires the user to ask to disconnect or revoke.",{})
 ];
 function cleanToolParams(v) { return v && typeof v==="object" && !Array.isArray(v) ? v : {}; }
@@ -57,6 +58,16 @@ async function callTool(name,args) {
     );
     if(!q.rowCount) return textResult({accepted:false,error:"session_disconnected_stale_or_replayed"});
     return textResult({accepted:true,requestId,sessionId,expiresInSeconds:45});
+  }
+  if(name==="get_speech_transcript") {
+    const sessionId=typeof args.sessionId==="string"?args.sessionId.toLowerCase():"";
+    if(!isHexHash(sessionId)) return textResult({received:false,error:"invalid_session"});
+    const q=await db.query(
+      "WITH active AS (SELECT device_id,active_session_id FROM nexusportal_devices WHERE device_id='primary' AND revoked_at IS NULL AND voice_consent=true AND active_session_id=$1 AND last_seen_at>now()-interval '45 seconds'), next AS (SELECT i.input_id FROM nexusportal_speech_inputs i JOIN active a ON a.device_id=i.device_id AND a.active_session_id=i.session_id WHERE i.consumed_at IS NULL AND i.expires_at>now() ORDER BY i.created_at FOR UPDATE OF i SKIP LOCKED LIMIT 1), consumed AS (UPDATE nexusportal_speech_inputs i SET consumed_at=now() FROM next n WHERE i.input_id=n.input_id RETURNING i.input_id,i.transcript) SELECT * FROM consumed",
+      [sessionId]
+    );
+    if(!q.rowCount) return textResult({received:false,error:"no_pending_speech"});
+    return textResult({received:true,inputId:q.rows[0].input_id,transcript:q.rows[0].transcript});
   }
   if(name==="revoke_device") {
     const q=await db.query("UPDATE nexusportal_devices SET revoked_at=now(),active_session_id=NULL,voice_consent=false,session_started_at=NULL WHERE device_id='primary' AND revoked_at IS NULL RETURNING device_id");
