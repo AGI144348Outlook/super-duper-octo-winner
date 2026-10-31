@@ -36,7 +36,11 @@ public class MainActivity extends Activity {
  @Override protected void onResume(){super.onResume();if(status!=null)status.setText("Screen observation OFF · Touch control OFF");refreshRelayStatus();syncSessionState();}
  private void refreshRelayStatus(){
   if(networkStatus==null)return;
-  if(!DeviceRelayClient.paired(this)){networkStatus.setText("Relay reachable after pairing · Phone not paired · Voice off");return;}
+  if(!DeviceRelayClient.paired(this)){
+   String pending=SecureDeviceSecretStore.get(this,"pair_code");
+   networkStatus.setText(pending==null?"Phone not paired · Tap Pair this phone to connect":"Phone not paired · Approve code "+pending+" in ChatGPT, then check pairing");
+   return;
+  }
   DeviceRelayClient.heartbeat(this,(result,error)->{
    if(networkStatus!=null)networkStatus.setText(error==null?"Relay connected · Phone paired · "+(getSharedPreferences("nexusportal_device",MODE_PRIVATE).getBoolean("voice_active",false)?"Voice session active":"Voice off"):"Phone paired · Relay disconnected");
   });
@@ -52,7 +56,7 @@ public class MainActivity extends Activity {
   action("Claude · Open app (not connected)",v->launchCompanion("Claude","com.anthropic.claude"));
   action("Gemini · Open app (not connected)",v->launchCompanion("Gemini","com.google.android.apps.bard"));
   root.addView(heading("My AI connections",18));
-  TextView note=heading("MCP connection slots will appear here once verified. No AI platform is connected yet.",14);note.setTextColor(Color.LTGRAY);root.addView(note);
+  TextView note=heading("ChatGPT MCP relay connection is separate from pairing. Phone and voice status appear below.",14);note.setTextColor(Color.LTGRAY);root.addView(note);
   root.addView(heading("Phone ↔ ChatGPT connection",18));
   TextView mcpNote=heading("Pair this phone with a one-time code. No long-lived token is typed or shown. Pairing is separate from voice consent; screen observation and touch control stay OFF.",14);mcpNote.setTextColor(Color.LTGRAY);root.addView(mcpNote);
   networkStatus=heading("Relay status: disconnected · Phone: not paired · Voice: off",14);networkStatus.setTextColor(Color.LTGRAY);root.addView(networkStatus);
