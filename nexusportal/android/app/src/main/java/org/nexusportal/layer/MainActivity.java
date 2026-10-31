@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
   TextView permissions=heading("Overlay: user-granted Android permission.\nScreen observation: OFF (not implemented).\nAI commands: OFF (not connected).\nTouch control: not available.",14);permissions.setTextColor(Color.LTGRAY);root.addView(permissions);
   setContentView(scroll);
  }
- private void sendOverlay(String command){Intent i=new Intent(this,OverlayService.class);i.setAction(command);if(Build.VERSION.SDK_INT>=26)startForegroundService(i);else startService(i);}
+ private void sendOverlay(String command){Intent i=new Intent(this,OverlayService.class);i.setAction(command);if("STOP".equals(command)){stopService(i);return;}if(Build.VERSION.SDK_INT>=26)startForegroundService(i);else startService(i);}
  private void startOverlay(){
   if(!Settings.canDrawOverlays(this)){status.setText("Grant Draw over other apps, return, then tap Start floating %.");Intent i=new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName()));startActivity(i);return;}
   sendOverlay("START");status.setText("Overlay started. Tap floating % to reopen this configuration screen.");
