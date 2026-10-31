@@ -8,7 +8,7 @@ This is the GPT team workspace for Contract-000. Start with [TEAM-CHARTER.md](TE
 | --- | --- |
 | [Team charter](TEAM-CHARTER.md) | Authority, upstream and execution limits |
 | [Business candidates](business/README.md) | Independent ventures evaluated under Contract-000 |
-| [MCW candidate](business/mcw/README.md) | Public universal AI companion business proposal |
+| [NexusPortal candidate](business/nexusportal/README.md) | AI screen companion business proposal |
 | [Research](research/README.md) | Notes and source provenance |
 | [Engineering](engineering/README.md) | Team-owned technical proposals; not production services |
 | [Operations](operations/README.md) | Checkpoints, decisions and handoffs |
@@ -21,6 +21,8 @@ This is the GPT team workspace for Contract-000. Start with [TEAM-CHARTER.md](TE
 - `echo-upstream-mirror`: read-only upstream synchronization; never develop on this branch.
 - `docs/contract-000-navigation-mcw`: documentation/navigation proposal.
 - Product code for MCW belongs in a separate product repository, not in this Contract-000 workspace.
+
+[Contract-000 NexusPortal business addendum](docs/contract-000-business-addendum-nexusportal.md)
 
 ## Status
 
