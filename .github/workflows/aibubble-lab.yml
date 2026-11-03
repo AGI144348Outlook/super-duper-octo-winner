@@ -61,9 +61,11 @@ jobs:
       - name: Compile experimental APK
         working-directory: proj
         run: gradle assembleDebug --stacktrace
+      - name: Rename Lab APK
+        run: mv proj/app/build/outputs/apk/debug/app-debug.apk proj/app/build/outputs/apk/debug/AIBubble-Lab.apk
       - name: Upload AIBubble Lab artifact
         uses: actions/upload-artifact@v4
         with:
           name: AIBubble-Lab-experimental-apk
-          path: proj/app/build/outputs/apk/debug/app-debug.apk
+          path: proj/app/build/outputs/apk/debug/AIBubble-Lab.apk
           if-no-files-found: error
