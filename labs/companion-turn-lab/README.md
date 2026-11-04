@@ -16,3 +16,12 @@ This initial lab does not implement Neon, duplicate storage, a Vercel dashboard,
 
 ## Research tracking
 Pre-test plan and results belong in [Issue #57](https://github.com/AGI144348Outlook/super-duper-octo-winner/issues/57). No test should run without first posting exact revision, fixtures, procedure and falsifiers. See #22 and #24 for earlier specifications.
+
+## Native Android app (primary lab target)
+
+Source: [android/](android/). This is a distinct Android application with application ID `org.aibubble.companionturnlab`, independent Gradle settings, Android manifest and Kotlin activity. It is not the existing AIBubble app. It starts the microphone only after a user tap and permission, stops only on the second tap, never ends due to silence, cancels without relay when backgrounded, and shows three honest request receipt statuses. Local recordings stay in private cache. There is no companion adapter, transcription, speech playback/recording or network transport yet. **No build or device tests have been run.**
+
+Main reference: `AIBubble.zip` (unpacked by the existing `.github/workflows/aibubble.yml`). The main project remains untouched. The earlier browser `index.html` is only an archived auxiliary prototype, not the target app.
+
+### Companion adapters
+A provider-neutral adapter translates CONTRACT-{•} stages into an authorized companion interface and reports independently verifiable capabilities and results. MCP availability does not automatically imply that the provider can insert a user message into an existing chat, render a transcript there, or export spoken audio. The adapter must report unsupported stages without marking them complete. No paid API is assumed as a prerequisite.
