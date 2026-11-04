@@ -6,6 +6,9 @@ import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -48,10 +51,28 @@ class MainActivity : Activity() {
                 render()
             }
         } }
+        val enableBubble = Button(this).apply { text = "Enable floating microphone bubble"; setOnClickListener { enableBubble() } }
+        val stopBubble = Button(this).apply { text = "Stop floating bubble"; setOnClickListener {
+            startService(Intent(this@MainActivity, BubbleService::class.java).setAction(BubbleService.ACTION_STOP))
+        } }
+        layout.addView(enableBubble)
+        layout.addView(stopBubble)
         receipt = TextView(this).apply { textSize = 12f; setTextIsSelectable(true) }
         listOf(title, toggle, cancel, reset, status, receipt).forEach(layout::addView)
         setContentView(layout)
         render()
+    }
+
+    private fun enableBubble() {
+        if (!Settings.canDrawOverlays(this)) {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+            return
+        }
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 102)
+            return
+        }
+        startForegroundService(Intent(this, BubbleService::class.java).setAction(BubbleService.ACTION_START))
     }
 
     private fun requestStart() {
@@ -62,7 +83,8 @@ class MainActivity : Activity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == micRequest && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED && capture == Capture.IDLE) start()
+        if (requestCode == 102 && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) enableBubble()
+        else if (requestCode == micRequest && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED && capture == Capture.IDLE) start()
         else render()
     }
 
