@@ -44,7 +44,7 @@ jobs:
           manifest.write_text(m)
           dest=root/"app/src/main/java/com/aibubble/experiment"
           dest.mkdir(parents=True,exist_ok=True)
-          for name in ("HebrewSessionControls.kt","GuidanceSessionController.kt"):
+          for name in ("HebrewSessionControls.kt","GuidanceSessionController.kt","SilenceTurnDetector.kt","HandsFreeSpeechLoop.kt"):
               src=Path("experiments/triggered-guidance")/name
               (dest/name).write_bytes(src.read_bytes())
           (dest/"TextAnchorTracker.kt").write_bytes(Path("experiments/text-anchor/TextAnchorTracker.kt").read_bytes())
