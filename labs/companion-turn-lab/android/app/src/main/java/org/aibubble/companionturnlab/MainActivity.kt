@@ -66,11 +66,12 @@ class MainActivity : Activity() {
         else render()
     }
 
+    @Suppress("DEPRECATION")
     private fun start() {
         if (capture != Capture.IDLE) return
         try {
             val file = File(cacheDir, "user-turn-${transactionId}.m4a")
-            val r = if (Build.VERSION.SDK_INT >= 31) MediaRecorder(this) else @Suppress("DEPRECATION") MediaRecorder()
+            val r = if (Build.VERSION.SDK_INT >= 31) MediaRecorder(this) else MediaRecorder()
             r.setAudioSource(MediaRecorder.AudioSource.MIC)
             r.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             r.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
