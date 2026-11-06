@@ -1,0 +1,45 @@
+name: Preserve AIBubble APK on main
+
+on:
+  push:
+    paths:
+      - .github/workflows/preserve-aibubble-apk.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+
+      - name: Download verified existing AIBubble artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p downloaded
+          gh run download 41755229384 --repo "$GITHUB_REPOSITORY" \
+            --name aibubble-debug-apk --dir downloaded
+          test -s downloaded/app-debug.apk
+          echo "30926cfb48b4a0e5c4c2c3a6af946869a30eaf3a7664800ac13d0e2c5021085e  downloaded/app-debug.apk" | sha256sum --check
+          mkdir -p downloads
+          cp downloaded/app-debug.apk downloads/AIBubble-debug-2026-11-04.apk
+
+      - name: Store APK as a versioned main-branch file
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add downloads/AIBubble-debug-2026-11-04.apk
+          if git diff --cached --quiet; then
+            echo 'APK already published unchanged.'
+          else
+            git commit -m 'Publish stable AIBubble debug APK from verified Nov 4 artifact'
+            git push origin HEAD:main
+          fi
