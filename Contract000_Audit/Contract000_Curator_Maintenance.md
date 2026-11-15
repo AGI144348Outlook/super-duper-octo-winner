@@ -27,16 +27,16 @@ The following are literal entry paths relative to Contract000_Audit/. Resolve th
 | `aibubble-connect-portal` | [start](aibubble-connect-portal/protocols/Contract_ReadMe/Contract000_readme.md) | 1 |
 | `aibubble-continuous-guidance-experiment` | [start](aibubble-continuous-guidance-experiment/protocols/Contract_ReadMe/Contract000_readme.md) | 2 |
 | `aibubble-lab-main-integration` | [start](aibubble-lab-main-integration/protocols/Contract_ReadMe/Contract000_readme.md) | 3 |
-| `docs/contract-000-navigation-mcw` | [start](docs%2Fcontract-000-navigation-mcw/protocols/Contract_ReadMe/Contract000_readme.md) | 4 |
+| `docs/contract-000-navigation-mcw` | [start](docs%252Fcontract-000-navigation-mcw/protocols/Contract_ReadMe/Contract000_readme.md) | 4 |
 | `echo-governor-snapshot` | [start](echo-governor-snapshot/protocols/Contract_ReadMe/Contract000_readme.md) | 5 |
 | `echo-upstream-mirror` | [start](echo-upstream-mirror/protocols/Contract_ReadMe/Contract000_readme.md) | 6 |
-| `feat/pe-message-board` | [start](feat%2Fpe-message-board/protocols/Contract_ReadMe/Contract000_readme.md) | 7 |
-| `feature/nexusportal-device-voice` | [start](feature%2Fnexusportal-device-voice/protocols/Contract_ReadMe/Contract000_readme.md) | 8 |
-| `feature/nexusportal-renderer-foundation` | [start](feature%2Fnexusportal-renderer-foundation/protocols/Contract_ReadMe/Contract000_readme.md) | 9 |
-| `fix/nexusportal-bubble-launch-selected-ai` | [start](fix%2Fnexusportal-bubble-launch-selected-ai/protocols/Contract_ReadMe/Contract000_readme.md) | 10 |
-| `fresh/companion-frame-template` | [start](fresh%2Fcompanion-frame-template/protocols/Contract_ReadMe/Contract000_readme.md) | 11 |
+| `feat/pe-message-board` | [start](feat%252Fpe-message-board/protocols/Contract_ReadMe/Contract000_readme.md) | 7 |
+| `feature/nexusportal-device-voice` | [start](feature%252Fnexusportal-device-voice/protocols/Contract_ReadMe/Contract000_readme.md) | 8 |
+| `feature/nexusportal-renderer-foundation` | [start](feature%252Fnexusportal-renderer-foundation/protocols/Contract_ReadMe/Contract000_readme.md) | 9 |
+| `fix/nexusportal-bubble-launch-selected-ai` | [start](fix%252Fnexusportal-bubble-launch-selected-ai/protocols/Contract_ReadMe/Contract000_readme.md) | 10 |
+| `fresh/companion-frame-template` | [start](fresh%252Fcompanion-frame-template/protocols/Contract_ReadMe/Contract000_readme.md) | 11 |
 | `gpt-worker-output` | [start](gpt-worker-output/protocols/Contract_ReadMe/Contract000_readme.md) | 12 |
-| `lab/contract-three-request-companion-app` | [start](lab%2Fcontract-three-request-companion-app/protocols/Contract_ReadMe/Contract000_readme.md) | 13 |
+| `lab/contract-three-request-companion-app` | [start](lab%252Fcontract-three-request-companion-app/protocols/Contract_ReadMe/Contract000_readme.md) | 13 |
 | `main` | [start](main/protocols/Contract_ReadMe/Contract000_readme.md) | 0 |
 
 ## Final repository routing protocol
