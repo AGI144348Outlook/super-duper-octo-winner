@@ -1,15 +1,27 @@
 {
   "schema": "contract000.audit-checkpoint.v1",
   "repository": "AGI144348Outlook/super-duper-octo-winner",
-  "represented_branch": "RESOLVE_FROM_PARENT_BRANCH_FOLDER",
+  "represented_branch": "aibubble-connect-portal",
   "category": "protocols",
-  "phase": "VERIFY_DIRECTORY",
-  "directory_status": "GENERATED_FROM_PINNED_GITHUB_TREES",
-  "content_status": "NOT_AUDITED",
-  "last_completed_file": null,
-  "within_file_position": null,
-  "findings": [],
-  "blockers": [],
+  "phase": "READ_SOURCE_FILES",
+  "directory_status": "VERIFIED_14_OF_14_PINNED_TREES_NO_MISMATCHES",
+  "content_status": "PARTIAL",
+  "last_completed_file": ".github/workflows/aibubble.yml",
+  "within_file_position": "EOF",
+  "findings": [
+    "AIBUBBLE-PROT-001"
+  ],
+  "blockers": [
+    "AIBubble.zip and APK require format-appropriate binary/member inspection when reached; no runtime execution verified."
+  ],
   "next_directory": "../../skills/Contract_ReadMe/Contract000_readme.md",
-  "updated": "2026-11-15"
+  "updated": "2026-11-15",
+  "last_completed_source": {
+    "branch": "aibubble-connect-portal",
+    "commit": "8c5636235b1cac3f561ec4b2199f3d4f63e8b822",
+    "path": ".github/workflows/aibubble.yml",
+    "blob": "22960b3c9efc2161bac2107b8dd07207aa324f59"
+  },
+  "next_file": ".github/workflows/companion-turn-lab-android.yml",
+  "last_run_id": "automation-turn-11-2026-11-15T08:02:26-06:00 (scheduler UUID unavailable)"
 }
