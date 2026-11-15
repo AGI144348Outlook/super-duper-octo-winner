@@ -1,0 +1,135 @@
+{
+  "schema": "contract000.branch-map.v1",
+  "repository": "AGI144348Outlook/super-duper-octo-winner",
+  "source_snapshot_date": "2026-11-15",
+  "maintenance_branch": "main",
+  "excluded_root": "Contract000_Audit",
+  "branches": [
+    {
+      "id": 0,
+      "name": "aibubble-connect-portal",
+      "folder": "aibubble-connect-portal",
+      "source_commit": "8c5636235b1cac3f561ec4b2199f3d4f63e8b822",
+      "source_tree": "8c5636235b1cac3f561ec4b2199f3d4f63e8b822",
+      "entry": "aibubble-connect-portal/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 1
+    },
+    {
+      "id": 1,
+      "name": "aibubble-continuous-guidance-experiment",
+      "folder": "aibubble-continuous-guidance-experiment",
+      "source_commit": "190a862b48631cce3869cc264dd30fa9ca7b2b25",
+      "source_tree": "190a862b48631cce3869cc264dd30fa9ca7b2b25",
+      "entry": "aibubble-continuous-guidance-experiment/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 2
+    },
+    {
+      "id": 2,
+      "name": "aibubble-lab-main-integration",
+      "folder": "aibubble-lab-main-integration",
+      "source_commit": "282d1592af2eda7edfada20427b6a01a6981bbb0",
+      "source_tree": "282d1592af2eda7edfada20427b6a01a6981bbb0",
+      "entry": "aibubble-lab-main-integration/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 3
+    },
+    {
+      "id": 3,
+      "name": "docs/contract-000-navigation-mcw",
+      "folder": "docs%2Fcontract-000-navigation-mcw",
+      "source_commit": "d7b9ed6eb5085cea67c0c17bd543278dc7e9d4dd",
+      "source_tree": "d7b9ed6eb5085cea67c0c17bd543278dc7e9d4dd",
+      "entry": "docs%2Fcontract-000-navigation-mcw/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 4
+    },
+    {
+      "id": 4,
+      "name": "echo-governor-snapshot",
+      "folder": "echo-governor-snapshot",
+      "source_commit": "561c1a097fe027663e4d4558f5c52f543adc0443",
+      "source_tree": "561c1a097fe027663e4d4558f5c52f543adc0443",
+      "entry": "echo-governor-snapshot/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 5
+    },
+    {
+      "id": 5,
+      "name": "echo-upstream-mirror",
+      "folder": "echo-upstream-mirror",
+      "source_commit": "d38d7ee3f93a90486cdebd7d779fcdf3086a55c1",
+      "source_tree": "d38d7ee3f93a90486cdebd7d779fcdf3086a55c1",
+      "entry": "echo-upstream-mirror/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 6
+    },
+    {
+      "id": 6,
+      "name": "feat/pe-message-board",
+      "folder": "feat%2Fpe-message-board",
+      "source_commit": "834a4b0d18f5120bddf3172021a4e5eb49483b8a",
+      "source_tree": "834a4b0d18f5120bddf3172021a4e5eb49483b8a",
+      "entry": "feat%2Fpe-message-board/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 7
+    },
+    {
+      "id": 7,
+      "name": "feature/nexusportal-device-voice",
+      "folder": "feature%2Fnexusportal-device-voice",
+      "source_commit": "eb89508d2fce2d0a96190e1fa6b95a08cc53b5f2",
+      "source_tree": "eb89508d2fce2d0a96190e1fa6b95a08cc53b5f2",
+      "entry": "feature%2Fnexusportal-device-voice/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 8
+    },
+    {
+      "id": 8,
+      "name": "feature/nexusportal-renderer-foundation",
+      "folder": "feature%2Fnexusportal-renderer-foundation",
+      "source_commit": "4926fb32c30c661b445723db017656c54996c2bf",
+      "source_tree": "4926fb32c30c661b445723db017656c54996c2bf",
+      "entry": "feature%2Fnexusportal-renderer-foundation/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 9
+    },
+    {
+      "id": 9,
+      "name": "fix/nexusportal-bubble-launch-selected-ai",
+      "folder": "fix%2Fnexusportal-bubble-launch-selected-ai",
+      "source_commit": "fe6ff38db825baeb16438cf6a0c5801c50a06d4b",
+      "source_tree": "fe6ff38db825baeb16438cf6a0c5801c50a06d4b",
+      "entry": "fix%2Fnexusportal-bubble-launch-selected-ai/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 10
+    },
+    {
+      "id": 10,
+      "name": "fresh/companion-frame-template",
+      "folder": "fresh%2Fcompanion-frame-template",
+      "source_commit": "869811d0e1423bd460e3795d67b4b3133ae1ed7d",
+      "source_tree": "869811d0e1423bd460e3795d67b4b3133ae1ed7d",
+      "entry": "fresh%2Fcompanion-frame-template/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 11
+    },
+    {
+      "id": 11,
+      "name": "gpt-worker-output",
+      "folder": "gpt-worker-output",
+      "source_commit": "713fce1ea8160ec3ad52ad5a76fc9dfb0568b461",
+      "source_tree": "713fce1ea8160ec3ad52ad5a76fc9dfb0568b461",
+      "entry": "gpt-worker-output/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 12
+    },
+    {
+      "id": 12,
+      "name": "lab/contract-three-request-companion-app",
+      "folder": "lab%2Fcontract-three-request-companion-app",
+      "source_commit": "0f248fc3d4f66e404dab272e9279318a33829bb9",
+      "source_tree": "0f248fc3d4f66e404dab272e9279318a33829bb9",
+      "entry": "lab%2Fcontract-three-request-companion-app/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 13
+    },
+    {
+      "id": 13,
+      "name": "main",
+      "folder": "main",
+      "source_commit": "834a4b0d18f5120bddf3172021a4e5eb49483b8a",
+      "source_tree": "834a4b0d18f5120bddf3172021a4e5eb49483b8a",
+      "entry": "main/protocols/Contract_ReadMe/Contract000_readme.md",
+      "next_branch_id": 0
+    }
+  ]
+}
