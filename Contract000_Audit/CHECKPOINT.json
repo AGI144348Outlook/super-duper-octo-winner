@@ -4,13 +4,14 @@
   "branch_index": 0,
   "category_index": 0,
   "next_directory": "aibubble-connect-portal/protocols/Contract_ReadMe/Contract000_readme.md",
-  "directory_status": "VERIFIED_14_PINNED_TREES_NO_MISMATCHES",
-  "content_status": "PARTIAL_ONE_SOURCE_FILE_READ",
-  "last_run_id": "automation-turn-11-2026-11-15T08:02:26-06:00 (scheduler UUID unavailable)",
-  "updated": "2026-11-15",
-  "next_file": ".github/workflows/companion-turn-lab-android.yml",
-  "last_completed_file": ".github/workflows/aibubble.yml",
+  "directory_status": "VERIFIED_14_PINNED_TREES_NO_MISMATCHES_2026-11-16",
+  "content_status": "PARTIAL_TWO_SOURCE_FILES_READ",
+  "last_run_id": "automation-turn-11-2026-11-16T15:56:35-06:00 (scheduler UUID unavailable)",
+  "updated": "2026-11-16",
+  "next_file": ".github/workflows/gpt-think-probe.yml",
+  "last_completed_file": ".github/workflows/companion-turn-lab-android.yml",
   "finding_ids": [
-    "AIBUBBLE-PROT-001"
+    "AIBUBBLE-PROT-001",
+    "AIBUBBLE-PROT-002"
   ]
 }
