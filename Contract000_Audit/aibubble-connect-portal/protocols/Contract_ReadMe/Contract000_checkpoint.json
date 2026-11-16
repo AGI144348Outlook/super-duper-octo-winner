@@ -4,24 +4,25 @@
   "represented_branch": "aibubble-connect-portal",
   "category": "protocols",
   "phase": "READ_SOURCE_FILES",
-  "directory_status": "VERIFIED_14_OF_14_PINNED_TREES_NO_MISMATCHES",
+  "directory_status": "VERIFIED_14_OF_14_PINNED_TREES_NO_MISMATCHES_2026-11-16",
   "content_status": "PARTIAL",
-  "last_completed_file": ".github/workflows/aibubble.yml",
+  "last_completed_file": ".github/workflows/companion-turn-lab-android.yml",
   "within_file_position": "EOF",
   "findings": [
-    "AIBUBBLE-PROT-001"
+    "AIBUBBLE-PROT-001",
+    "AIBUBBLE-PROT-002"
   ],
   "blockers": [
     "AIBubble.zip and APK require format-appropriate binary/member inspection when reached; no runtime execution verified."
   ],
   "next_directory": "../../skills/Contract_ReadMe/Contract000_readme.md",
-  "updated": "2026-11-15",
+  "updated": "2026-11-16",
   "last_completed_source": {
     "branch": "aibubble-connect-portal",
     "commit": "8c5636235b1cac3f561ec4b2199f3d4f63e8b822",
-    "path": ".github/workflows/aibubble.yml",
-    "blob": "22960b3c9efc2161bac2107b8dd07207aa324f59"
+    "path": ".github/workflows/companion-turn-lab-android.yml",
+    "blob": "0cd3bbbb18015b49fe143284deffc4fed1dcdf79"
   },
-  "next_file": ".github/workflows/companion-turn-lab-android.yml",
-  "last_run_id": "automation-turn-11-2026-11-15T08:02:26-06:00 (scheduler UUID unavailable)"
+  "next_file": ".github/workflows/gpt-think-probe.yml",
+  "last_run_id": "automation-turn-11-2026-11-16T15:56:35-06:00 (scheduler UUID unavailable)"
 }
